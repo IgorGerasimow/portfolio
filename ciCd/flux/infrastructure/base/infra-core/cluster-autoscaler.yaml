@@ -1,0 +1,30 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cluster-autoscaler
+  namespace: infra-core
+spec:
+  releaseName: cluster-autoscaler
+  chart:
+    spec:
+      chart: cluster-autoscaler
+      sourceRef:
+        kind: HelmRepository
+        name: cluster-autoscaler
+        namespace: flux-system
+      version: 9.18.0
+  interval: 10m
+  values:
+    additionalLabels:
+      owner: company-devops
+      stream: company
+      app: cluster-autoscaler
+      product: observability
+      jira: companySTREAM-13527
+      temporary: "false"
+      deleteAfter: "false"
+    image:
+      repository: k8s.gcr.io/autoscaling/cluster-autoscaler
+      tag: v1.22.0
+      pullPolicy: IfNotPresent

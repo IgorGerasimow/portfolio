@@ -1,0 +1,10 @@
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Provider
+metadata:
+  name: slack-provider
+spec:
+  type: slack
+  channel: '<slack_channel_name>'
+  secretRef:
+    name: slack-alert-url

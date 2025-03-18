@@ -1,0 +1,17 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aws-lb-controller
+  namespace: infra-core
+spec:
+  values:
+    podLabels:
+      env: stage
+
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::627992770327:role/aws-loadbalancer-controller-company-stage-main-oidc
+
+    defaultTags:
+      Env: "stage"

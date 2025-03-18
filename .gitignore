@@ -1,0 +1,15 @@
+.*.sw?
+.idea
+terragrunt.iml
+vendor
+.vscode
+*.tfstate
+*.tfstate.backup
+*.out
+.terragrunt-cache
+.bundle
+.ruby-version
+.terraform.lock.hcl
+.DS_Store
+mocks/
+.go-version

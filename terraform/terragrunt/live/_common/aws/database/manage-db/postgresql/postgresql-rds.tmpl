@@ -1,0 +1,23 @@
+%{ for db_i, databases in db_instances ~}
+provider "postgresql" {
+
+  scheme    = "awspostgres"
+  host      = "${split(":", rds[db_i].db_instance_endpoint)[0]}"
+  port      = "${rds[db_i].db_instance_port}"
+  username  = "${rds[db_i].db_instance_username}"
+  password  = "${rds[db_i].db_instance_password}"
+  superuser = false
+  alias     = "${db_i}"
+}
+
+module "postgresql_${db_i}" {
+  source = "./postgresql_instance"
+  providers = {
+    postgresql = postgresql.${db_i}
+  }
+
+  db_instance = try(var.db_instances["${db_i}"], {})
+  env         = var.env
+}
+
+%{ endfor }

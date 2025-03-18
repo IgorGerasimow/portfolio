@@ -1,0 +1,174 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aws-ebs-csi-driver
+  namespace: infra-core
+  labels:
+    app: aws-ebs-csi-driver
+    jira: "companySTREAM-13259"
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: aws-ebs-csi-driver
+      version: '2.10.1'
+      sourceRef:
+        kind: HelmRepository
+        name: aws-ebs-csi-driver
+        namespace: flux-system
+      interval: 24h
+  values:
+    # Fake lables to pass verification
+    podLabels:
+      owner: devops-company
+      stream: company
+      env: prod
+      comp_app: aws-ebs-csi-driver-sidecar
+      jira: companySTREAM-13259
+      temporary: "false"
+      deleteAfter: "false"
+    image:
+      repository: k8s.gcr.io/provider-aws/aws-ebs-csi-driver
+      tag: "v1.5.0"
+      pullPolicy: IfNotPresent
+    sidecars:
+      provisioner:
+        image:
+          repository: k8s.gcr.io/sig-storage/csi-provisioner
+          tag: "v3.1.0"
+        logLevel: 2
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+      attacher:
+        image:
+          repository: k8s.gcr.io/sig-storage/csi-attacher
+          tag: "v3.4.0"
+        logLevel: 2
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+      snapshotter:
+        image:
+          repository: k8s.gcr.io/sig-storage/csi-snapshotter
+          tag: "v6.0.1"
+        logLevel: 2
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+      livenessProbe:
+        image:
+          repository: k8s.gcr.io/sig-storage/livenessprobe
+          tag: "v2.6.0"
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+      resizer:
+        image:
+          repository: k8s.gcr.io/sig-storage/csi-resizer
+          tag: "v1.4.0"
+        logLevel: 2
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 256Mi
+      nodeDriverRegistrar:
+        image:
+          repository: k8s.gcr.io/sig-storage/csi-node-driver-registrar
+          tag: "v2.5.1"
+        logLevel: 2
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+    controller:
+      podLabels:
+        owner: devops-company
+        stream: company
+        env: prod
+        comp_app: aws-ebs-csi-driver-controller
+        jira: companySTREAM-13259
+        temporary: "false"
+        deleteAfter: "false"
+      k8sTagClusterId: company-stage-main
+      logLevel: 2
+      region: eu-central-1
+      replicaCount: 2
+      resources:
+        limits:
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+      serviceAccount:
+        create: false
+        # Managed by Terraform
+        name: aws-ebs-csi-controller
+
+    node:
+      podLabels:
+        owner: devops-company
+        stream: company
+        env: prod
+        comp_app: aws-ebs-csi-driver-node
+        jira: companySTREAM-13259
+        temporary: "false"
+        deleteAfter: "false"
+      resources:
+        limits:
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+      serviceAccount:
+        create: false
+        # Managed by Terraform
+        name: aws-ebs-csi-controller
+
+
+    storageClasses:
+    - name: ebs-gp3-encrypted
+      annotations:
+        storageclass.kubernetes.io/is-default-class: "false"
+      labels:
+        fs: ext4
+        encrypted: "true"
+      volumeBindingMode: WaitForFirstConsumer
+      reclaimPolicy: Retain
+      allowVolumeExpansion: true
+      parameters:
+        type: gp3
+        encrypted: "true"
+        csi.storage.k8s.io/fstype: ext4
+        iops: "3000"
+        throughput: "125"
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  name: gp2
+parameters:
+  fsType: ext4
+  type: gp2
+provisioner: kubernetes.io/aws-ebs
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer

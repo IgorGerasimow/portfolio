@@ -1,0 +1,45 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aws-ebs-csi-driver
+  namespace: infra-core
+spec:
+  chart:
+    spec:
+      version: "2.10.1"
+  values:
+    podLabels:
+      env: stage
+    controller:
+      podLabels:
+        env: stage
+      k8sTagClusterId: company-stage-main
+      region: eu-central-1
+      replicaCount: 2
+      serviceAccount:
+        # Managed by Terraform
+        name: aws-ebs-csi-controller
+    node:
+      podLabels:
+        env: stage
+      serviceAccount:
+        # Managed by Terraform
+        name: aws-ebs-csi-controller
+
+    storageClasses:
+      - name: ebs-gp3-encrypted
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "false"
+        labels:
+          fs: ext4
+          encrypted: "true"
+        volumeBindingMode: WaitForFirstConsumer
+        reclaimPolicy: Retain
+        allowVolumeExpansion: true
+        parameters:
+          type: gp3
+          encrypted: "true"
+          csi.storage.k8s.io/fstype: ext4
+          iops: "3000"
+          throughput: "250"

@@ -1,0 +1,26 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: infra-core
+
+commonLabels:
+  deleteAfter: "false"
+  env: prod
+  owner: company-devops
+  product: infra-k8s
+  stream: company
+  temporary: "false"
+resources:
+  - ../../base/infra-core/external-dns.yaml
+  - ../../base/infra-core/external-dns-cloudflare.yaml
+  - ../../base/infra-core/aws-lb-controller.yaml
+  - ../../base/infra-core/aws-ebs-csi-driver.yaml
+  # - ../../base/infra-core/vector-agent.yaml
+  # - ../../base/infra-core/cluster-autoscaler.yaml
+patchesStrategicMerge:
+  - external-dns.yaml
+  - external-dns-cloudflare.yaml
+  - aws-lb-controller.yaml
+  - aws-ebs-csi-driver.yaml
+  # - vector-agent.yaml
+  # - cluster-autoscaler.yaml

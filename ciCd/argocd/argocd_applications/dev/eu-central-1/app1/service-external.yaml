@@ -1,0 +1,25 @@
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: service1-service-external-sv
+#  namespace: project
+#  labels:
+#    app: service1-service-external-sv
+#    service: service1-service-external-sv
+#spec:
+#  ports:
+#    - protocol: TCP
+#      port: 80
+#      targetPort: 80
+#---
+#apiVersion: v1
+#kind: Endpoints
+#metadata:
+#  name: service1-service-external-sv
+#  namespace: project
+#subsets:
+#  - addresses:
+#    - ip: 172.16.108.122 # project nginx ec2
+#    ports:
+#    - port: 80

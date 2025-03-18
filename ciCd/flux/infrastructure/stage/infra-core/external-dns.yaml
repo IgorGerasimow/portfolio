@@ -1,0 +1,14 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-dns
+  namespace: infra-core
+spec:
+  values:
+    domainFilters:
+      - company-stage.corp.loc
+    podLabels:
+      env: stage
+    metrics:
+      enabled: false

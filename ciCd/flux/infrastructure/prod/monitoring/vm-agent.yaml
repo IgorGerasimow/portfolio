@@ -1,0 +1,57 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: vmagent
+spec:
+  image:
+    tag: v1.87.9
+  vmAgentExternalLabelName: vmagent_prod
+  additionalScrapeConfigs:
+    name: additional-scrape-config
+    key: additional-config.yaml
+  logFormat: json
+  replicaCount: 2
+  shardCount: 1
+  remoteWriteSettings:
+    queues: 125
+    maxBlockSize: 33554432
+  extraArgs:
+    remoteWrite.maxDiskUsagePerURL: 2GB
+    promscrape.maxScrapeSize: 64MB
+    promscrape.noStaleMarkers: "true"
+    promscrape.kubernetesSDCheckInterval: 60s
+    promscrape.streamParse: "true"
+    remoteWrite.showURL: "true"
+  podMetadata:
+    labels:
+      env: prod
+      jira: companySTREAM-23730
+  resources:
+    requests:
+      cpu: 20m
+      memory: 300Mi
+    limits:
+      memory: 300Mi
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8429
+    successThreshold: 1
+    failureThreshold: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
+    initialDelaySeconds: 120
+  serviceScrapeRelabelTemplate:
+    - sourceLabels: [__meta_kubernetes_pod_label_product]
+      targetLabel: product
+    - sourceLabels: [__meta_kubernetes_pod_label_owner]
+      targetLabel: owner
+    - sourceLabels: [__meta_kubernetes_pod_label_stream]
+      targetLabel: stream
+    - sourceLabels: [__meta_kubernetes_pod_label_team]
+      targetLabel: team
+    - sourceLabels: [__meta_kubernetes_pod_label_app]
+      targetLabel: app
+    - sourceLabels: [__meta_kubernetes_pod_label_env]
+      targetLabel: env

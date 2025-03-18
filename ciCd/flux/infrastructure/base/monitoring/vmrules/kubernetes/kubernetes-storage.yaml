@@ -1,0 +1,94 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  labels:
+    env: stage
+    owner: company-devops
+    stream: company
+  name: kubernetes-storage-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: kubernetes-storage
+    rules:
+    - alert: KubePersistentVolumeFillingUp
+      annotations:
+        description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is only {{ $value | humanizePercentage }} free.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup
+        summary: PersistentVolume is filling up.
+      expr: |
+        ((
+          kubelet_volume_stats_available_bytes{job="kubelet", metrics_path="/metrics"}
+            /
+          kubelet_volume_stats_capacity_bytes{job="kubelet", metrics_path="/metrics"}
+        ) < 0.03
+        and
+        kubelet_volume_stats_used_bytes{job="kubelet", metrics_path="/metrics"}
+        > 0
+        ) * on (namespace, persistentvolumeclaim) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, persistentvolumeclaim) (
+          1, max by(namespace, persistentvolumeclaim, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_persistentvolumeclaim_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 1m
+      labels:
+        severity: critical
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubePersistentVolumeFillingUp
+      annotations:
+        description: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is expected to fill up within four days. Currently {{ $value | humanizePercentage }} is available.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup
+        summary: PersistentVolume is filling up.
+      expr: |
+        ((
+          kubelet_volume_stats_available_bytes{job="kubelet", metrics_path="/metrics"}
+            /
+          kubelet_volume_stats_capacity_bytes{job="kubelet", metrics_path="/metrics"}
+        ) < 0.15
+        and
+        kubelet_volume_stats_used_bytes{job="kubelet", metrics_path="/metrics"} > 0
+        and
+        predict_linear(kubelet_volume_stats_available_bytes{job="kubelet", metrics_path="/metrics"}[6h], 4 * 24 * 3600) < 0
+        ) * on (namespace, persistentvolumeclaim) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, persistentvolumeclaim) (
+          1, max by(namespace, persistentvolumeclaim, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_persistentvolumeclaim_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 1h
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubePersistentVolumeErrors
+      annotations:
+        description: The persistent volume {{ $labels.persistentvolume }} has status {{ $labels.phase }}.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeerrors
+        summary: PersistentVolume is having issues with provisioning.
+      expr: |
+        (
+          kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"}
+            > 0
+        ) * on (namespace, persistentvolume) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, persistentvolume) (
+          1, max by(namespace, persistentvolume, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_persistentvolume_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 5m
+      labels:
+        severity: critical
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"

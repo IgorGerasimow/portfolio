@@ -1,0 +1,145 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMCluster
+metadata:
+  name: vmcluster-persistent
+spec:
+  clusterVersion: v1.84.0-cluster
+  retentionPeriod: "1"
+  vmstorage:
+    priorityClassName: system-cluster-critical
+    logFormat: json
+    logLevel: INFO
+    extraArgs:
+      search.maxUniqueTimeseries: "2000000"
+      dedup.minScrapeInterval: 10s
+    replicaCount: 2
+    image:
+      pullPolicy: IfNotPresent
+    storageDataPath: "/vm-data"
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ebs-gp3-encrypted
+          resources:
+            requests:
+              storage: 200Gi
+    resources:
+      requests:
+        cpu: 300m
+        memory: 6Gi
+      limits:
+        memory: 6Gi
+    ########### Temporarily deleted
+    # affinity:
+    #   podAntiAffinity:
+    #     preferredDuringSchedulingIgnoredDuringExecution:
+    #       - podAffinityTerm:
+    #           labelSelector:
+    #             matchExpressions:
+    #               - key: app
+    #                 operator: In
+    #                 values:
+    #                   - vmstorage
+    #           topologyKey: kubernetes.io/hostname
+    #         weight: 100
+    podMetadata:
+      labels:
+        owner: company-devops
+        stream: company
+        env: stage
+        app: vmstorage
+        product: observability
+        jira: companySTREAM-16716
+        temporary: "false"
+        deleteAfter: "false"
+  vmselect:
+    priorityClassName: system-cluster-critical
+    logFormat: json
+    logLevel: INFO
+    extraArgs:
+      search.maxQueryDuration: 240s
+      search.maxConcurrentRequests: "64"
+      search.logSlowQueryDuration: 10s
+      search.maxQueryLen: "65536"
+      memory.allowedPercent: "60"
+      dedup.minScrapeInterval: 30s
+    replicaCount: 2
+    image:
+      pullPolicy: IfNotPresent
+    cacheMountPath: "/select-cache"
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ebs-gp3-encrypted
+          resources:
+            requests:
+              storage: 50Gi
+    resources:
+      requests:
+        cpu: "300m"
+        memory: "256Mi"
+      limits:
+        memory: "512Mi"
+    # affinity:
+    #   podAntiAffinity:
+    #     preferredDuringSchedulingIgnoredDuringExecution:
+    #       - podAffinityTerm:
+    #           labelSelector:
+    #             matchExpressions:
+    #               - key: app
+    #                 operator: In
+    #                 values:
+    #                   - vmselect
+    #           topologyKey: kubernetes.io/hostname
+    #         weight: 100
+    podMetadata:
+      labels:
+        owner: company-devops
+        stream: company
+        env: stage
+        app: vmselect
+        product: observability
+        jira: companySTREAM-16716
+        temporary: "false"
+        deleteAfter: "false"
+  vminsert:
+    priorityClassName: system-cluster-critical
+    logFormat: json
+    logLevel: INFO
+    replicaCount: 2
+    extraArgs:
+      replicationFactor: "2"
+      maxLabelsPerTimeseries: "50"
+      maxConcurrentInserts: "16"
+      sortLabels: "true"
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: "300Mi"
+      limits:
+        memory: "500Mi"
+    # affinity:
+    #   podAntiAffinity:
+    #     preferredDuringSchedulingIgnoredDuringExecution:
+    #       - podAffinityTerm:
+    #           labelSelector:
+    #             matchExpressions:
+    #               - key: app
+    #                 operator: In
+    #                 values:
+    #                   - vminsert
+    #           topologyKey: kubernetes.io/hostname
+    #         weight: 100
+    podMetadata:
+      labels:
+        owner: company-devops
+        stream: company
+        env: stage
+        app: vminsert
+        product: observability
+        jira: companySTREAM-16716
+        temporary: "false"
+        deleteAfter: "false"

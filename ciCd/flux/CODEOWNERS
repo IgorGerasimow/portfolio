@@ -1,0 +1,6 @@
+[company owned code]
+apps/base/          @codeowners/corp/devops
+apps/prod/          @codeowners/corp/devops
+
+clusters/           @codeowners/corp/devops
+infrastructure/     @codeowners/corp/devops

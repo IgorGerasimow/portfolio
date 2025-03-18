@@ -1,0 +1,34 @@
+{{- if .Values.watcher.kubernetes.create  }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "statusbay.fullname" . }}-configmap-watcher-kubernetes
+  labels:
+{{ include "statusbay.labels" . | indent 4 }}
+  annotations:
+{{ include "statusbay.annotations" . | indent 4 }}
+data: 
+  config: |-
+    ---
+    cluster_name: {{ toYaml .Values.watcher.kubernetes.application.cluster_name }}
+    log:
+      {{- toYaml  .Values.watcher.kubernetes.application.log | nindent 6 }}
+    mysql:
+      dns: "{{ template "statusbay.database.host" . }}"
+      port: {{ template "statusbay.database.port" . }}
+      username: "{{ template "statusbay.database.username" . }}"
+      password: "{{ template "statusbay.database.rawPassword" . }}"
+      schema: "{{ template "statusbay.database.schema" . }}"
+    notifiers:
+    {{- if .Values.watcher.kubernetes.application.slack }}
+      slack:
+        {{- toYaml .Values.watcher.kubernetes.application.slack | nindent 8 }}
+    {{- end }}
+    ui:
+      base_url: {{ .Values.ingress.ui.host }}
+      {{- if .Values.watcher.kubernetes.application.ui }}
+      {{- toYaml .Values.watcher.kubernetes.application.ui | nindent 6 }}
+      {{- end }}
+    applies:
+      {{- toYaml .Values.watcher.kubernetes.application.applies | nindent 6 }}
+{{- end -}}

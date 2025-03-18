@@ -1,0 +1,202 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: otel
+  namespace: monitoring
+spec:
+  interval: 20m
+  timeout: 15m
+  maxHistory: 3
+  chart:
+    spec:
+      chart: opentelemetry-collector
+      version: "0.50.1"
+      sourceRef:
+        kind: HelmRepository
+        name: opentelemetry
+        namespace: flux-system
+      interval: 24h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    mode: "deployment"
+    imagePullSecrets:
+    - name: deploy-secret
+    presets:
+      kubernetesAttributes:
+        enabled: true
+    podSecurityContext: {}
+    securityContext: {}
+    affinity: {} # need to add for prod
+    topologySpreadConstraints: {}
+    priorityClassName: "system-cluster-critical"
+    ports:
+      otlp:
+        enabled: true
+        containerPort: 4317
+        servicePort: 4317
+        hostPort: 4317
+        protocol: TCP
+        appProtocol: grpc
+      otlp-http:
+        enabled: false
+      jaeger-compact:
+        enabled: false
+      jaeger-thrift:
+        enabled: false
+      jaeger-grpc:
+        enabled: false
+      zipkin:
+        enabled: false
+      metrics:
+        enabled: true
+        containerPort: 8888
+        servicePort: 8888
+        protocol: TCP
+    resources:
+      requests:
+        cpu: 20m
+        memory: 100Mi
+      limits:
+        memory: 150Mi
+    podAnnotations:
+      vault.hashicorp.com/agent-init-first: "true"
+      vault.hashicorp.com/agent-inject: "true"
+      vault.hashicorp.com/agent-inject-secret-ca.cert: sre/tls-corp-cert
+      vault.hashicorp.com/agent-inject-template-ca.cert: |
+        {{- with secret "sre/tls-corp-cert" -}}
+        {{ .Data.data.ca }}
+        {{- end -}}
+      vault.hashicorp.com/role: company-ro
+      vault.hashicorp.com/secret-volume-path-ca.cert: /secrets
+      vault.hashicorp.com/tls-skip-verify: "true"
+      vault.hashicorp.com/agent-pre-populate-only: 'true'
+    podLabels:
+      app: otel-collector-company
+      owner: company-devops
+      stream: company
+      env: stage
+      product: observability
+      jira: companySTREAM-18405
+    replicaCount: 1
+    serviceMonitor:
+      enabled: true
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+      maxUnavailable: 0
+    autoscaling:
+      enabled: false
+    rollout:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 0
+      strategy: RollingUpdate
+    prometheusRule:
+      enabled: false
+      defaultRules:
+        enabled: false
+    config:
+      extensions:
+        health_check: {}
+        memory_ballast:
+          size_in_percentage: 20
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: ${MY_POD_IP}:4317
+      processors:
+        memory_limiter:
+          check_interval: 5s
+          limit_percentage: 80
+          spike_limit_percentage: 25
+        probabilistic_sampler:  # количество трейсов с приложения как на стороне сервиса так и єтой метрикой
+          sampling_percentage: 100
+        k8sattributes:
+          auth_type: "serviceAccount"
+          passthrough: false
+          extract:
+            labels:
+            - tag_name: stream
+              key: stream
+            - tag_name: product
+              key: product
+            - tag_name: owner
+              key: owner
+            - tag_name: team
+              key: team
+        resource:
+          attributes:
+          - key: namespace
+            from_attribute: k8s.namespace.name
+            action: insert
+          - key: cluster
+            value: stage-company
+            action: upsert
+        tail_sampling:
+          decision_wait: 10s
+          num_traces: 100
+          expected_new_traces_per_sec: 10
+          policies:
+            [
+              {
+                name: latency-threshold-ms,
+                type: latency,
+                latency: {threshold_ms: 5000}
+              },
+              {
+                name: spans-rate-limiting-per-second,
+                type: rate_limiting,
+                rate_limiting: {spans_per_second: 35}
+              },
+              {
+                name: drop-useless-spans-target,
+                type: string_attribute,
+                string_attribute: {key: http.target, values: [\/metrics, \/metrics\/.*, \/healthcheck, \/readiness, \/liveness, \/healthz, \/healt, \/health\/liveness, \/health\/readiness, _hc], enabled_regex_matching: true, invert_match: true}
+              },
+              {
+                name: drop-useless-spans-target,
+                type: string_attribute,
+                string_attribute: {key: http.url, values: [\/metrics, \/metrics\/.*, \/healthcheck, \/readiness, \/liveness, \/healthz, \/healt, \/health\/liveness, \/health\/readiness, _hc], enabled_regex_matching: true, invert_match: true}
+              },
+              {
+                name: drop-useless-spans-target,
+                type: string_attribute,
+                string_attribute: {key: http.endpoint, values: [\/metrics, \/metrics\/.*, \/healthcheck, \/readiness, \/liveness, \/healthz, \/healt, \/health\/liveness, \/health\/readiness, _hc], enabled_regex_matching: true, invert_match: true}
+              },
+            ]
+        batch:
+          send_batch_size: 1000
+          send_batch_max_size: 1100
+          timeout: 10s
+      exporters:
+        otlp:
+          endpoint: grafana-tempo-otlp-grpc.nonprod-sre.corp.loc:443
+          tls:
+            ca_file: /secrets/ca.cert
+      service:
+        extensions: [memory_ballast, health_check]
+        pipelines:
+          traces:
+            receivers:
+            - otlp
+            processors:
+            - memory_limiter
+            - probabilistic_sampler
+            - k8sattributes
+            - resource
+            - tail_sampling
+            - batch
+            exporters:
+            - otlp
+        telemetry:
+          metrics:
+            address: 0.0.0.0:8888
+          logs:
+            level: "info"

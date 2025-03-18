@@ -1,0 +1,22 @@
+#!/bin/sh
+#example: deploy.sh stage v1.0
+
+ENV=$1
+IMAGE_VERSION=$2
+BRANCH=main
+
+git config --global user.email "${CI_DEPLOY_USER}@corp.com" && git config --global user.name "${CI_DEPLOY_USER}"
+git remote set-url origin https://${CI_DEPLOY_USER}:${CI_DEPLOY_PASSWORD}@git.corp.com/${CI_PROJECT_PATH}.git
+
+git pull origin ${BRANCH}
+git checkout ${BRANCH}
+
+cd ./apps/$ENV/company-mail
+yq w -i ./deployment.yaml spec.values.tag ${IMAGE_VERSION}
+cd $OLDPWD
+
+git add -u
+git commit -m "${ENV} version was upgraded to ${IMAGE_VERSION}"
+git push origin ${BRANCH}
+
+echo "${ENV} version was upgraded to ${IMAGE_VERSION}"

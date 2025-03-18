@@ -1,0 +1,59 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMCluster
+metadata:
+  name: vmcluster-persistent
+spec:
+  clusterVersion: v1.81.1-cluster
+  retentionPeriod: "1"
+  vmstorage:
+    replicaCount: 2
+    logFormat: json
+    storage:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 200Gi
+    podMetadata:
+      labels:
+        env: stage
+    resources:
+      requests:
+        cpu: "300m"
+        memory: 1500Mi
+      limits:
+        memory: 3Gi
+  vmselect:
+    replicaCount: 2
+    logFormat: json
+    storage:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 5Gi
+    podMetadata:
+      labels:
+        env: stage
+    resources:
+      requests:
+        cpu: "300m"
+        memory: "250Mi"
+      limits:
+        memory: "350Mi"
+  vminsert:
+    extraArgs:
+      maxLabelsPerTimeseries: "50"
+      replicationFactor: "3"
+    replicaCount: 2
+    logFormat: json
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "400Mi"
+      limits:
+        memory: "500Mi"
+    podMetadata:
+      labels:
+        env: stage

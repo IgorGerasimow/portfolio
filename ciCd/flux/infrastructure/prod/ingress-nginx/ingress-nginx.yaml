@@ -1,0 +1,116 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  releaseName: ingress-nginx
+  interval: 1m
+  chart:
+    spec:
+      chart: ingress-nginx
+      version: "4.8.3"
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: flux-system
+      interval: 2m
+  values:
+    fullNameOverride: ingress-nginx
+    controller:
+      podLabels:
+        app: ingress-nginx
+        env: prod
+        stream: company
+        owner: company-devops
+        jira: "companySTREAM-16719"
+      admissionWebhooks:
+        enabled: true
+      setAsDefaultIngress: true
+      extraInitContainers:
+        - name: sysctl
+          image: "busybox:musl"
+          command:
+            - /bin/sh
+            - -c
+            - >-
+              sysctl -w net.ipv4.tcp_rmem="4096 16060 262144"
+              net.ipv4.tcp_wmem="4096 16384 262144"
+              net.ipv4.tcp_tw_reuse=1
+              net.ipv4.ip_local_port_range="1024 65023"
+              net.ipv4.tcp_max_syn_backlog=60000
+              net.ipv4.tcp_fin_timeout=30
+              net.ipv4.tcp_synack_retries=3
+              net.ipv4.ip_nonlocal_bind=1
+              net.core.somaxconn=60000
+          securityContext:
+            privileged: true
+      kind: Deployment
+      replicaCount: 1
+      autoscaling:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 50
+        targetMemoryUtilizationPercentage: 75
+      tolerations: []
+      affinity: {}
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          scrapeInterval: 30s
+          metricRelabelings:
+            - action: keep
+              regex: ^(nginx_ingress_controller_nginx_process_.+|nginx_ingress_controller_config_.+|nginx_ingress_controller_errors|nginx_ingress_controller_requests|nginx_ingress_controller_success)$
+              sourceLabels:
+                - __name__
+      resources:
+        requests:
+          cpu: 1
+          memory: 1Gi
+        limits:
+          cpu: 1
+          memory: 1Gi
+      service:
+        enabled: true
+        type: ClusterIP
+      config:
+        client-max-body-size: 10m
+        log-format-escape-json: "true"
+        log-format-upstream: '{
+          "time": "$time_iso8601",
+          "x-forward-for": "$proxy_add_x_forwarded_for",
+          "http_referrer": "$http_referer",
+          "http_user_agent": "$http_user_agent",
+          "method": "$request_method",
+          "status": "$status",
+          "vhost": "$host",
+          "request_proto": "$server_protocol",
+          "path": "$uri",
+          "upstream_addr": "$upstream_addr",
+          "proxy_host": "$proxy_host",
+          "client_ip": "$remote_addr",
+          "bytes_sent": "$bytes_sent",
+          "request_time": "$request_time",
+          "request_query": "$args",
+          "request_length": "$request_length",
+          "duration": "$request_time",
+          "CF-RAY": "$http_cf_ray"
+          }'
+        map-hash-bucket-size: "256"
+        proxy-headers-hash-max-size: "1024"
+        proxy-headers-hash-bucket-size: "128"
+        max-worker-connections: "16384"
+        proxy-body-size: 10m
+        ssl-ciphers: HIGH:!aNULL:!MD5
+        ssl-prefer-server-ciphers: "on"
+        ssl-protocols: SSLv2 TLSv1 TLSv1.1 TLSv1.2
+        worker-processes: "4"
+        worker-shutdown-timeout: 120s
+        use-forwarded-headers: "true"
+        skip-access-log-urls: "/healthz,/heath,/ping,/status"
+        use-geoip: false

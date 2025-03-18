@@ -1,0 +1,266 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: prometheus
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: '39.11.0'
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      interval: 1h
+  values:
+    commonLabels:
+      prometheus: prometheus-k8s-prod
+      owner: company-devops
+      stream: company
+      env: prod
+      product: observability
+      temporary: 'false'
+      deleteAfter: 'false'
+      jira: companySTREAM-13090
+      comp_app: prometheus-operator
+
+    defaultRules:
+      create: false
+      rules:
+        alertmanager: false
+        etcd: false
+        general: true
+        k8s: true
+        kubeApiserver: true
+        kubePrometheusNodeAlerting: true
+        kubePrometheusNodeRecording: true
+        kubernetesAbsent: true
+        kubernetesApps: true
+        kubernetesResources: true
+        kubernetesStorage: true
+        kubernetesSystem: true
+        kubeScheduler: false
+        network: true
+        node: true
+        prometheus: false
+        prometheusOperator: true
+        time: true
+
+    global:
+      rbac:
+        create: true
+        pspEnabled: true
+
+    alertmanager:
+      enabled: true
+
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+        maxUnavailable: ""
+
+      ## Add ingress annotations for chart: ingress-nginx version: 4.2.5
+      ingress:
+        enabled: true
+        hosts:
+          - alertmanager.company-stage.corp.loc
+        # annotations:
+        #   kubernetes.io/ingress.class: nginx
+
+      serviceMonitor:
+        selfMonitor: true
+        relabelings:
+          - sourceLabels: [__meta_kubernetes_pod_label_stream]
+            targetLabel: stream
+          - sourceLabels: [__meta_kubernetes_pod_label_owner]
+            targetLabel: owner
+          - sourceLabels: [__meta_kubernetes_pod_label_team]
+            targetLabel: team
+          - sourceLabels: [__meta_kubernetes_pod_label_env]
+            targetLabel: env
+
+      alertmanagerSpec:
+        priorityClassName: system-cluster-critical
+        replicas: 2
+        retention: 12h
+        storage:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: ebs-gp3-encrypted
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 5Gi
+
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 10m
+          limits:
+            memory: 64Mi
+        podMetadata:
+          labels:
+            jira: companySTREAM-13090
+            owner: company-devops
+            stream: company
+            env: prod
+            product: observability
+            temporary: "false"
+            deleteAfter: "false"
+
+    grafana:
+      enabled: false
+
+    kubeApiServer:
+      enabled: true
+      serviceMonitor:
+        metricRelabelings:
+          - action: drop
+            regex: "apiserver_request_duration_seconds_bucket"
+            sourceLabels: [__name__]
+          - action: drop
+            regex: "apiserver_request_latencies_bucket"
+            sourceLabels: [__name__]
+          - action: drop
+            regex: "apiserver_response_sizes_bucket"
+            sourceLabels: [__name__]
+
+    kubelet:
+      enabled: true
+      namespace: kube-system
+
+      serviceMonitor:
+        https: true
+
+    kubeControllerManager:
+      enabled: false
+
+    kubeProxy:
+      enabled: false
+
+    coreDns:
+      enabled: true
+      service:
+        selector:
+          k8s-app: kube-dns
+
+    kubeDns:
+      enabled: false
+
+    kubeEtcd:
+      enabled: false
+
+    kubeScheduler:
+      enabled: true
+      service:
+        selector:
+          k8s-app: kube-scheduler
+
+    kubeStateMetrics:
+      enabled: true
+      serviceMonitor:
+        selfMonitor:
+          enabled: true
+
+    kube-state-metrics:
+      selfMonitor:
+        enabled: true
+      rbac:
+        create: true
+      customLabels:
+        owner: company-devops
+        stream: company
+        env: prod
+        product: observability
+        temporary: 'false'
+        deleteAfter: 'false'
+        jira: companySTREAM-13090
+        app: kube-state-metrics
+      metricLabelsAllowlist:
+        - pods=[app,owner,stream,team,env,product]
+        - deployments=[app,owner,stream,team,env,product]
+        - statefulsets=[app,owner,stream,team,env,product]
+        - daemonsets=[app,owner,stream,team,env,product]
+        - jobs=[app,owner,stream,env,team,product]
+        - horizontalpodautoscalers=[app,owner,stream,team,env,product]
+
+    nodeExporter:
+      enabled: true
+      jobLabel: jobLabel
+      serviceMonitor:
+        relabelings:
+          - sourceLabels:
+              - __meta_kubernetes_endpoint_node_name
+            targetLabel: node
+          - sourceLabels: [__meta_kubernetes_pod_label_stream]
+            targetLabel: stream
+          - sourceLabels: [__meta_kubernetes_pod_label_owner]
+            targetLabel: owner
+          - sourceLabels: [__meta_kubernetes_pod_label_team]
+            targetLabel: team
+          - sourceLabels: [__meta_kubernetes_pod_label_env]
+            targetLabel: env
+
+    prometheus-node-exporter:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 64Mi
+      priorityClassName: system-node-critical
+      podLabels:
+        jobLabel: node-exporter
+        owner: company-devops
+        stream: company
+        env: prod
+        product: observability
+        temporary: 'false'
+        deleteAfter: 'false'
+        jira: companySTREAM-13090
+      extraArgs:
+        - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+        - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
+        - --collector.interrupts
+        - --collector.conntrack
+        - --collector.ksmd
+        - --collector.processes
+
+    prometheusOperator:
+      enabled: true
+      ## Uncomment this when re-installing release to be able to save old PrometheusRules and ServiceMonitors
+      createCustomResource: true
+      serviceAccount:
+        create: true
+      kubeletService:
+        enabled: true
+        namespace: kube-system
+      serviceMonitor:
+        selfMonitor: true
+        relabelings:
+          - sourceLabels: [__meta_kubernetes_pod_label_stream]
+            targetLabel: stream
+          - sourceLabels: [__meta_kubernetes_pod_label_owner]
+            targetLabel: owner
+          - sourceLabels: [__meta_kubernetes_pod_label_team]
+            targetLabel: team
+          - sourceLabels: [__meta_kubernetes_pod_label_env]
+            targetLabel: env
+      resources:
+        requests:
+          memory: 300Mi
+          cpu: 10m
+        limits:
+          memory: 300Mi
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+
+    prometheus:
+      enabled: false
+
+  valuesFrom:
+    - kind: ConfigMap
+      name: prometheus-alert-rules-values

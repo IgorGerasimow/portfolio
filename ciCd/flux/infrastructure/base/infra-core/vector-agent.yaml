@@ -1,0 +1,202 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: vector
+  namespace: infra-core
+spec:
+  releaseName: vector
+  interval: 2m
+  chart:
+    spec:
+      chart: vector
+      sourceRef:
+        kind: HelmRepository
+        name: vector
+        namespace: flux-system
+      version: "0.16.0"
+  values:
+    role: Agent
+    commonLabels:
+      env: stage
+
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: eks.amazonaws.com/compute-type
+                  operator: DoesNotExist
+
+    podLabels:
+      env: stage
+      stream: company
+      owner: company-DevOps
+
+    service:
+      enabled: true
+
+    serviceAccount:
+      create: true
+      name: vector
+
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "infra"
+        effect: "NoSchedule"
+      - key: "dedicated"
+        operator: "Equal"
+        value: "snowplow"
+        effect: "NoSchedule"
+
+    env:
+      - name: VECTOR_SELF_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: "spec.nodeName"
+      - name: KAFKA_BROKERS
+        valueFrom:
+          secretKeyRef:
+            name: sre-kafka-credentials
+            key: brokers
+      - name: KAFKA_LOGIN
+        valueFrom:
+          secretKeyRef:
+            name: sre-kafka-credentials
+            key: login
+      - name: KAFKA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: sre-kafka-credentials
+            key: password
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
+
+    podMonitor:
+      enabled: true
+      jobLabel: vector-agent
+      port: prometheus
+      path: /metrics
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_stream]
+          targetLabel: stream
+        - sourceLabels: [__meta_kubernetes_pod_label_owner]
+          targetLabel: owner
+        - sourceLabels: [__meta_kubernetes_pod_label_env]
+          targetLabel: env
+
+    customConfig:
+      api:
+        address: 0.0.0.0:8686
+        enabled: true
+        playground: false
+      healthchecks:
+        enabled: true
+        require_healthy: true
+      sources:
+        internal_metrics_source:
+          type: internal_metrics
+          namespace: monitoring
+          scrape_interval_secs: 30
+
+        kubernetes_json_logs_source:
+          type: kubernetes_logs
+          auto_partial_merge: true
+          max_read_bytes: 2048
+          max_line_bytes: 32768
+          fingerprint_lines: 1
+          glob_minimum_cooldown_ms: 60000
+          delay_deletion_ms: 60000
+          data_dir: /vector-data-dir
+          timezone: local
+          ingestion_timestamp_field: ingestion_ts
+          # extra_label_selector: "logs-to-shared-elk=true"
+
+      transforms:
+        kubernetes_json_logs_deduplicate_by_message:
+          type: dedupe
+          inputs:
+            - kubernetes_json_logs_source
+
+        kubernetes_json_logs_remove_checksum_fields:
+          type: remap
+          drop_on_abort: true
+          drop_on_error: false
+          inputs:
+            - kubernetes_json_logs_deduplicate_by_message
+          source: |-
+            for_each(object!(.kubernetes.pod_annotations)) -> |key, _val| {
+              if starts_with(key, "checksum") {
+                ., err = remove(., path: ["kubernetes", "pod_annotations", key])
+                if err != null {
+                  log(err)
+                }
+              }
+            }
+
+        kubernetes_json_logs_create_topic:
+          drop_on_abort: true
+          drop_on_error: false
+          inputs:
+            - kubernetes_json_logs_remove_checksum_fields
+          source: |-
+            if (.kubernetes.pod_namespace == "monitoring") && (.kubernetes.container_name != "es-index-janitor") && (.kubernetes.pod_labels.app != "vector-agent"){
+              abort
+            }
+            if (.kubernetes.pod_namespace == "flux") {
+              abort
+            }
+            if (.kubernetes.pod_namespace == "flux-system") {
+              abort
+            }
+
+            if exists(.kubernetes.pod_labels.stream) {
+              .stream, err = downcase(.kubernetes.pod_labels.stream)
+              if err != null {
+                log("Downcase error: " + err, level: "error", rate_limit_secs: 60)
+              }
+            } else {
+              .stream = "unallocated"
+            }
+
+            .env = "aws-stage-company"
+
+            if exists(.kubernetes.pod_namespace) {
+              .namespace, err = downcase(.kubernetes.pod_namespace)
+              if err != null {
+                log("Downcase error: " + err, level: "error", rate_limit_secs: 60)
+              }
+            } else {
+              .namespace = "nons"
+            }
+
+            .topic_key = "logs." + .stream + "." + .env + "." + .namespace
+          type: remap
+      sinks:
+        kafka_out:
+          librdkafka_options:
+            acks: "1"
+          type: kafka
+          inputs:
+            - kubernetes_json_logs_create_topic
+          bootstrap_servers: $KAFKA_BROKERS
+          message_timeout_ms: 300000
+          sasl:
+            enabled: true
+            mechanism: SCRAM-SHA-512
+            password: $KAFKA_PASSWORD
+            username: $KAFKA_LOGIN
+          tls:
+            enabled: true
+          socket_timeout_ms: 60000
+          topic: |-
+            {{"{{topic_key}}"}}
+          compression: lz4
+          encoding:
+            codec: json
+            timestamp_format: unix

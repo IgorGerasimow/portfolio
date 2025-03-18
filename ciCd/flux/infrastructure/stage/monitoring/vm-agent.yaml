@@ -1,0 +1,41 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: vmagent
+spec:
+  image:
+    tag: v1.77.1
+  vmAgentExternalLabelName: vmagent_stage
+  additionalScrapeConfigs:
+    name: additional-scrape-config
+    key: additional-config.yaml
+  logFormat: json
+  replicaCount: 2
+  shardCount: 1
+  remoteWriteSettings:
+    queues: 125
+    maxBlockSize: 33554432
+  extraArgs:
+    remoteWrite.maxDiskUsagePerURL: 1GB
+    promscrape.maxScrapeSize: 64MB
+    promscrape.noStaleMarkers: "true"
+    promscrape.kubernetesSDCheckInterval: 60s
+  podMetadata:
+    labels:
+      env: prod
+  resources:
+    requests:
+      cpu: 20m
+      memory: 300Mi
+    limits:
+      memory: 300Mi
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8429
+    successThreshold: 1
+    failureThreshold: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
+    initialDelaySeconds: 120

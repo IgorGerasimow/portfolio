@@ -1,0 +1,55 @@
+%{ for db_i, databases in db_instances ~}
+provider "mysql" {
+  endpoint = "${rds[db_i].db_instance_endpoint}"
+  username = "${rds[db_i].db_instance_username}"
+  password = "${rds[db_i].db_instance_password}"
+  alias    = "${db_i}_rds"
+}
+
+provider "mysql" {
+  endpoint = "${rds[db_i].db_instance_endpoint}"
+  username = "${rds[db_i].db_instance_username}%{ if length(try(db_instances[db_i].roles, {})) > 0 }_terraform%{ endif }"
+  password = "${rds[db_i].db_instance_password}"
+  alias    = "${db_i}"
+}
+
+# AWS RDS don't GRANT ROLE_ADMIN to default MySQL user, but ROLE_ADMIN priv is required for mapping roles to users
+
+resource "mysql_user" "role_admin_${db_i}" {
+
+  count = length(try(var.db_instances["${db_i}"].roles, {})) > 0 ? 1 : 0
+
+  user               = "${rds[db_i].db_instance_username}_terraform"
+  host               = "%"
+  plaintext_password = "${rds[db_i].db_instance_password}"
+
+  provider = mysql.${db_i}_rds
+}
+
+resource "mysql_grant" "role_admin_${db_i}" {
+
+  count = length(try(var.db_instances["${db_i}"].roles, {})) > 0 ? 1 : 0
+
+  user       = mysql_user.role_admin_${db_i}[0].user
+  host       = mysql_user.role_admin_${db_i}[0].host
+  database   = "*"
+  privileges = ["ROLE_ADMIN", "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "RELOAD", "PROCESS", "REFERENCES", "INDEX", "ALTER", "SHOW DATABASES", "CREATE TEMPORARY TABLES", "LOCK TABLES", "EXECUTE", "REPLICATION SLAVE", "REPLICATION CLIENT", "CREATE VIEW", "SHOW VIEW", "CREATE ROUTINE", "ALTER ROUTINE", "CREATE USER", "EVENT", "TRIGGER"]
+  grant      = true
+
+  provider = mysql.${db_i}_rds
+}
+
+module "mysql_${db_i}" {
+  source = "./mysql_instance"
+  providers = {
+    mysql = mysql.${db_i}
+  }
+
+  db_instance = try(var.db_instances["${db_i}"], {})
+  set_name    = var.set_name
+  env         = var.env
+
+  depends_on = [mysql_grant.role_admin_${db_i}]
+}
+
+%{ endfor }

@@ -1,0 +1,57 @@
+name: Build and push of Client service to Amazon ECR
+
+on:
+  push:
+    branches:
+      - integration
+    paths:
+    - 'clients/Client/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [13.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1.4.2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Yarn Install
+      working-directory: ./clients/Client
+      run: |
+        ls -la
+        pwd
+        yarn install
+    - name: Staging Build
+      working-directory: ./clients/Client
+      run: |
+        yarn build
+    - name: Deploy to S3
+      uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --acl public-read --delete
+      env:
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        SOURCE_DIR: "./clients/Client/build"
+
+  slackNotification:
+    needs: build
+    name: Slack Notification
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2.0.0
+      env:
+        SLACK_COLOR: '#3278BD'
+        SLACK_TITLE: Build and push of Client service to Amazon ECR
+        SLACK_CHANNEL: tech-notices-integration
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

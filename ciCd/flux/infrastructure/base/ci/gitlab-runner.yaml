@@ -1,0 +1,35 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: gitlab-runner
+spec:
+  releaseName: gitlab-runner
+  chart:
+    spec:
+      chart: gitlab-runner
+      sourceRef:
+        kind: HelmRepository
+        name: gitlab-runner
+        namespace: flux-system
+      version: 0.49.1
+  interval: 10m
+  values:
+    gitlabUrl: https://git.corp.com/
+    runnerRegistrationToken: "TOKEN"
+    runners:
+      privileged: true
+      locked: false
+      name: corp-stage
+      tags: corp-stage
+      config: |
+        [[runners]]
+          [runners.kubernetes]
+            namespace = "{{.Release.Namespace}}"
+            image = "ubuntu:16.04"
+            node_selector = 'eks.amazonaws.com/capacityType = SPOT'
+
+    rbac:
+      create: true
+    nodeSelector:
+      eks.amazonaws.com/capacityType: ON_DEMAND

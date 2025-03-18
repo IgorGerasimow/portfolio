@@ -1,0 +1,105 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: prometheus
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: '52.1.0'
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      interval: 1h
+  values:
+    commonLabels:
+      prometheus: prometheus-k8s-prod
+      env: prod
+      jira: companySTREAM-16717
+
+    prometheus-node-exporter:
+      podLabels:
+        env: prod
+
+    alertmanager:
+      alertmanagerSpec:
+        podMetadata:
+          labels:
+            env: prod
+            jira: companySTREAM-16717
+      ingress:
+        enabled: true
+        hosts:
+          - alertmanager.company.corp.loc
+        annotations:
+          kubernetes.io/ingress.class: 'alb'
+          alb.ingress.kubernetes.io/group.name: "k8s-internal-monitoring-endpoint"
+          alb.ingress.kubernetes.io/tags: "stream=company,owner=company-devops,terraform=false"
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+          alb.ingress.kubernetes.io/scheme: 'internal'
+          alb.ingress.kubernetes.io/success-codes: '200'
+          alb.ingress.kubernetes.io/target-type: 'ip'
+          alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,100.64.0.0/10
+        paths:
+          - /*
+
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          group_by: ["alertname"]
+          receiver: "monitoring-aws-prod-company"
+          repeat_interval: 1h
+          routes:
+            - receiver: monitoring-aws-prod-company
+              matchers:
+                - alertname=~"^.*"
+              continue: true
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 4h
+            # company team alerts
+            - receiver: "company-app"
+              matchers:
+                - owner=~"^(?i)company$"
+              continue: false
+            - receiver: "company-infra"
+              matchers:
+                - team=~"^(?i)company$"
+                - owner=~"^(?i)company-devops$"
+              continue: false
+
+
+        receivers:
+
+          # Shared AWS-PROD-company alerts
+          - name: "monitoring-aws-prod-company"
+            slack_configs:
+              - api_url: "https://hooks.slack.com/services///"
+                channel: "#monitoring-aws-prod-company"
+                send_resolved: true
+                title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification'
+                text: >-
+                  {{ range .Alerts }}
+                    *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+                    *Details:*
+                    {{ .Annotations.description }}
+                    {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+                    {{ end }}
+                  {{ end }}
+
+          # company team
+          - name: "company-infra"
+            pagerduty_configs:
+              - routing_key: cd84c9686b074a03d02e949b0236e58e
+                description: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }} {{ if gt (len .CommonLabels) (len .GroupLabels) }}({{ $comma := 0 }}{{ with .CommonLabels.Remove .GroupLabels.Names }}{{ range .SortedPairs }}{{ if match "^(service|stream|host|app|team|namespace|responsable_persons|owner|consumer|consumergroup|topic|severity|responsible_persons)$" .Name }}{{ if $comma }}, {{ end }}{{ .Name }}="{{ .Value }}"{{ $comma = 1 }}{{ end }}{{ end }}{{ end }}){{ end }}'
+                severity: "{{ if .CommonLabels.severity }}{{ .CommonLabels.severity | toLower }}{{ else }}critical{{ end }}"
+
+          - name: "company-app"
+            pagerduty_configs:
+              - routing_key: 2279bbc1cc1f4a06d093a6e17fa13fc0
+                description: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }} {{ if gt (len .CommonLabels) (len .GroupLabels) }}({{ $comma := 0 }}{{ with .CommonLabels.Remove .GroupLabels.Names }}{{ range .SortedPairs }}{{ if match "^(service|stream|host|app|team|namespace|responsable_persons|owner|consumer|consumergroup|topic|severity|responsible_persons)$" .Name }}{{ if $comma }}, {{ end }}{{ .Name }}="{{ .Value }}"{{ $comma = 1 }}{{ end }}{{ end }}{{ end }}){{ end }}'
+                severity: "{{ if .CommonLabels.severity }}{{ .CommonLabels.severity | toLower }}{{ else }}critical{{ end }}"

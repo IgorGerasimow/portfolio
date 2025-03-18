@@ -1,0 +1,166 @@
+{{- if .Values.api.create  }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "statusbay.fullname" . }}-configmap-api
+  labels:
+{{ include "statusbay.labels" . | indent 4 }}
+  annotations:
+{{ include "statusbay.annotations" . | indent 4 }}
+data: 
+  config: |-
+    ---
+    log:
+      {{- toYaml .Values.api.application.log | nindent 6 }}
+    mysql:
+      dns: "{{ template "statusbay.database.host" . }}"
+      port: {{ template "statusbay.database.port" . }}
+      username: "{{ template "statusbay.database.username" . }}"
+      password: "{{ template "statusbay.database.rawPassword" . }}"
+      schema: "{{ template "statusbay.database.schema" . }}"
+    redis:
+      addr: "{{ template "statusbay.redis.host" . }}"
+      port: {{ template "statusbay.redis.port" . }}
+      password: "{{ template "statusbay.redis.rawPassword" . }}"
+      db: {{ template "statusbay.redis.db" . }}
+    metrics:
+      {{- toYaml .Values.api.application.metrics | nindent 6 }}
+    alerts:
+      {{- toYaml .Values.api.application.alerts | nindent 6 }}
+
+  events: |-
+    pod:
+    # Pod probing
+    - pattern: "Readiness probe failed"
+      descriptions:
+        - >-
+          Pod failed to pass readiness probe:
+          <ul>
+            <li>Examine the Pod's readiness check to see what's the "ready" criteria, try to run the check yourself.</li>
+            <li>Make sure the readiness check isn't timing out.</li>
+            <li>Once readiness probe failed after it was marked healthy, Kubernetes won't restart the Pod, you'll need to redeploy your application for the readiness.</li>
+            <li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes" target="_blank">Read more on Pod readiness</a>.</li>
+          </ul>
+    - pattern: "Liveness probe failed"
+      descriptions:
+        - >-
+          Pod failed to pass liveness probe:
+          <ul>
+            <li>Examine the Pod's liveness check to see what's the "healthy" criteria, try to run the check yourself.</li>
+            <li>Note: Kubernetes will restart the Pod until it's healthy.</li>
+            <li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command" target="_blank">Read more on Pod liveness</a>.</li>
+          </ul>
+    # Image
+    - pattern: "Error: ErrImagePull"
+      descriptions:
+        - >-
+          Error occurred during image pulling.
+          <ul>
+            <li>Check the repository, image name and tag are valid.</li>
+            <li>Verify that image exists in the registry.</li>
+            <li>Verify the host is authorized to download that image in case the registry is private.</li>
+            <li>Check connectivity from the host to the registry.</li>
+          </ul>
+    - pattern: "Error: ImagePullBackOff"
+      descriptions:
+        - >-
+          Error occurred during image pulling.
+          <ul>
+            <li>Check the repository, image name and tag are valid.</li>
+            <li>Verify that image exists in the registry.</li>
+            <li>Verify the host is authorized to download that image in case the registry is private.</li>
+            <li>Check connectivity from the host to the registry.</li>
+          </ul>
+    - pattern: "Failed to pull image"
+      descriptions:
+        - >-
+          Error occurred during image pulling.
+          <ul>
+            <li>Check the repository, image name and tag are valid.</li>
+            <li>Verify that image exists in the registry.</li>
+            <li>Verify the host is authorized to download that image in case the registry is private.</li>
+            <li>Check connectivity from the host to the registry.</li>
+          </ul>
+    - pattern: "ErrImagePull - rpc error: code = Unknown desc = Error response from daemon: manifest for"
+      descriptions:
+        - >-
+          Error occurred during image pulling.
+          <ul>
+            <li>Check the repository, image name and tag are valid.</li>
+            <li>Verify that image exists in the registry.</li>
+            <li>Verify the host is authorized to download that image in case the registry is private.</li>
+            <li>Check connectivity from the host to the registry.</li>
+          </ul>
+    # Others
+    - pattern: "CrashLoopBackOff"
+      descriptions:
+      - >-
+          Pod could not start and entered crash loop.
+          <ul>
+            <li>Try to run the container locally to see if it works.</li>
+            <li>Check application logs.</li>
+            <li>Run `kubectl describe` on the failed Pod to see if you can find a lead.</li>
+          </ul>
+    - pattern: "OOMKilled"
+      descriptions:
+        - >-
+          Pod killed due to Out Of Memory exception.
+          <ul>
+            <li>Check if the Pod's memory consumption has changed recently.</li>
+            <li>Check if there's any application memory leak.</li>
+            <li>Increase the amount of memory allocated to the Pod.</li>
+          </ul>
+    - pattern: "Error: cannot find volume"
+      descriptions:
+        - >-
+          Could not find the Pod's volume.
+          <ul>
+            <li>Make sure the Kubernetes node has enough free disk space.</li>
+            <li>Run `kubectl describe` on the volume to see if you can find a lead.</li>
+          </ul>
+
+    service:
+    - pattern: "could not find any suitable subnets for creating the ELB"
+      descriptions:
+      - >-
+        Could not find any suitable subnets.
+        <ul>
+            <li>Make sure the subnets are configured properly (i.e tagging).</li>
+            <li>Make sure you have enough IPs available in the subnets your load balancer uses.</li>
+        </ul>
+
+    replicaset:
+    - pattern: "Replicaset event example"
+      descriptions:
+      - >-
+        Replicaset event example.
+
+        
+    deployment:
+    - pattern: "Deployment event example"
+      descriptions:
+      - >-
+        Deployment event example.
+
+
+    daemonset:
+    - pattern: "Daemonset event example"
+      descriptions:
+      - >-
+        Daemonset event example.
+        
+    statefulset:
+    - pattern: "Statefulset event example"
+      descriptions:
+      - >-
+        Statefulset event example.
+
+    pvc:
+    - pattern: "not found"
+      descriptions:
+      - >-
+        The request storage class is not supported, please validate the storage class exists. <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims" target="_blank">Read more on PersistentVolumeClaims</a>
+        
+
+
+{{- end -}}

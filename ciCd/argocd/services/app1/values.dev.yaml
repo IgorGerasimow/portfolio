@@ -1,0 +1,67 @@
+app:
+  environment: dev
+
+  replicas: 1
+  strategy: Recreate    
+  resources:
+    limits:
+      memory: 6Gi
+      cpu: 1000m
+    requests:
+      memory: 2Gi
+      cpu: 200m
+
+  hpa:
+    enabled: false
+
+  configmap:
+    # APPLICATION SETTINGS
+    PROJECT_NAME: "corp"
+    PROJECT_PRODUCTS: "project1,project2"
+    LANGS: "EN,PT,ES,UA,IN,BR,PE"
+    PROJECT_CURRENCY: "coin"
+    LicenseIDs: "0,4,7"
+
+    # GIN SETTINGS
+    GIN_MODE: "release"
+    DEBUG_OFF: "true"
+
+    # DOMAIN SETTINGS
+    DOMAIN_CABINET: "cabinet.corp-integrations-dev.com"
+    REDIRECT_DOMAIN_CABINET: "cabinet.corp-integrations-dev.com"
+
+    # MONGO SETTINGS
+    DBHOST: "172.16.104.70"
+    DB_NAME: "revshare-corp"
+    DB_USERNAME_MG: "revshare"
+    DB_PASSWORD_MG: "bEK0yHNEnt9FIzZ8WnHJ"
+
+    # SECRETS
+    APPS_ACC_SECRET: ""
+    APPS_TELEGRAM_BOT: ""
+    TG_TOKEN_REG: ""
+    TG_CHAT_REG: "-"
+
+    # KRYPTONITE
+    KRYPTONITE_APIKEY: ""
+    KRYPTONITE_APIURL: "https://dev-api.kryptonite.byte.live/"
+    KRYPTONITE_SECREYKEY: "----- RSA PRIVATE KEY-----\+\n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\n-----END RSA PRIVATE KEY-----"
+    KRYPTONITE_ACCOUNT: "1"
+    KRYPTONITE_CLIENT: "1"
+    KRYPTONITE_ENABLED: false
+
+    MAILGUN_DOMAIN: "mg.corp-integrations-dev.com"
+    MAILGUN_APIKEY: ""
+    MAILGUN_SENDER_EMAIL: "postmaster@mg.corp-integrations-dev.com"
+    MAILGUN_SENDER_NAME: "corp Partners"
+
+  secrets:
+    # Authorization salt
+    AUTH_SALT: /services/project/dev/service1/AUTH_SALT
+
+  image:
+    repository: "AWS ID.dkr.ecr.eu-central-1.amazonaws.com/project/service1"
+    tag: ""
+
+
+

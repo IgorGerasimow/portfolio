@@ -1,0 +1,24 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlert
+metadata:
+  name: vmalert
+spec:
+  image:
+    tag: v1.87.9
+  podMetadata:
+    labels:
+      env: prod
+  resources:
+    requests:
+      cpu: "20m"
+      memory: 100Mi
+    limits:
+      memory: 100Mi
+  notifiers:
+    - url: "http://alertmanager-prometheus-kube-prometheus-alertmanager-0.alertmanager-operated:9093"
+    - url: "http://alertmanager-prometheus-kube-prometheus-alertmanager-1.alertmanager-operated:9093"
+  extraArgs:
+    evaluationInterval: 15s
+    external.url: https://grafana.corp.loc
+    external.alert.source: 'explore?orgId=1&left=["now-1h","now","victoriametrics-aws-prod-company",{"expr": "{{$expr|quotesEscape|crlfEscape|queryEscape}}"},{"mode":"Metrics"},{"ui":[true,true,true,"none"]}]'

@@ -1,0 +1,19 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: service1-service-s3-storage-static-sv
+  namespace: project
+spec:
+  type: ExternalName
+  externalName: "service1-dev-project-com.s3.eu-central-1.amazonaws.com"
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: service1-service-s3-front-static-sv
+  namespace: project
+spec:
+  type: ExternalName
+  externalName: "service1.corp-integrations-dev.com.s3-website.eu-central-1.amazonaws.com"

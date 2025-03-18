@@ -1,0 +1,28 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+resources:
+  - ../../base/monitoring/prometheus-operator.yaml
+  - ../../base/monitoring/cronjob-prometheus-operator-rules.yaml
+  - ../../base/monitoring/vm-operator.yaml
+  - ../../base/monitoring/vm-cluster.yaml
+  - ../../base/monitoring/vm-agent.yaml
+  - ../../base/monitoring/vm-alert.yaml
+  - ../../base/monitoring/metrics-server.yaml
+  - ../../base/monitoring/aws-rds-metadata-exporter.yaml
+  - ../../base/monitoring/prometheus-yace-exporter.yaml
+  - vm-additional-scrape-config.yaml
+  - vm-ingress.yaml
+  - vmrules
+  - otel-collector.yaml
+
+patchesStrategicMerge:
+  - prometheus-operator.yaml
+  - vm-operator.yaml
+  - vm-cluster.yaml
+  - vm-agent.yaml
+  - vm-alert.yaml
+  - metrics-server.yaml
+  - aws-rds-metadata-exporter.yaml
+  - prometheus-yace-exporter.yaml

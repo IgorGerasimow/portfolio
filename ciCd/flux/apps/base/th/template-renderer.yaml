@@ -1,0 +1,70 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: template-renderer
+spec:
+  interval: 1m
+  chart:
+    spec:
+      chart: deployer
+      version: 2.22.6
+      sourceRef:
+        kind: HelmRepository
+        name: internal
+        namespace: flux-system
+      interval: 24h
+  values:
+    monitoring:
+      - portname: http
+        path: /health
+    configmap:
+      VERSION: "$RELEASE_TAG"
+      APP_NAME: "template-renderer"
+      NODE_ENV: production
+    secretEnvRef:
+      - db-auth-template-renderer
+    labels:
+      app: template-renderer
+      team: company
+      product: company
+      owner: company
+      stream: company
+    deployment:
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+      replicaCount: 1
+      annotations: {}
+      pullSecret: deploy-secret
+      images:
+        - image: git.corp.com:4567/cm/company/th/template-renderer/template-renderer
+          pullPolicy: IfNotPresent
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 80
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 80
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "768Mi"
+              cpu: "200m"
+            limits:
+              memory: "1024Mi"
+    service:
+      type: ClusterIP
+      ports:
+        - name: grpc
+          port: 5000
+          targetPort: 5000
+          protocol: TCP

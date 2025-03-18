@@ -1,0 +1,106 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: vm-ingress
+spec:
+  interval: 1h
+  releaseName: vm-ingress
+  chart:
+    spec:
+      chart: raw
+      sourceRef:
+        kind: HelmRepository
+        name: bedag
+        namespace: flux-system
+      version: "1.1.0"
+      interval: 24h
+  values:
+    templates:
+      - |
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: vmselect
+          annotations:
+            kubernetes.io/ingress.class: 'alb'
+            alb.ingress.kubernetes.io/group.name: "k8s-internal-monitoring-endpoint"
+            alb.ingress.kubernetes.io/tags: "stream=company,owner=company-devops,terraform=false"
+            alb.ingress.kubernetes.io/backend-protocol: HTTP
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS": 443}]'
+            alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+            alb.ingress.kubernetes.io/certificate-arn: 'arn:aws:acm:eu-central-1:627992770327:certificate/eb4c1866-3128-4a19-b554-816be1d44202'
+            alb.ingress.kubernetes.io/scheme: 'internal'
+            alb.ingress.kubernetes.io/success-codes: '200'
+            alb.ingress.kubernetes.io/target-type: 'ip'
+            alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16
+        spec:
+          rules:
+          - host: "vmselect.company-stage.corp.loc"
+            http:
+              paths:
+                - path: /*
+                  pathType: ImplementationSpecific
+                  backend:
+                    service:
+                      name: vmselect-vmcluster-persistent
+                      port:
+                        number: 8481
+      - |
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: vmagent
+          annotations:
+            kubernetes.io/ingress.class: 'alb'
+            alb.ingress.kubernetes.io/group.name: "k8s-internal-monitoring-endpoint"
+            alb.ingress.kubernetes.io/tags: "stream=company,owner=company-devops,terraform=false"
+            alb.ingress.kubernetes.io/backend-protocol: HTTP
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS": 443}]'
+            alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+            alb.ingress.kubernetes.io/certificate-arn: 'arn:aws:acm:eu-central-1:627992770327:certificate/eb4c1866-3128-4a19-b554-816be1d44202'
+            alb.ingress.kubernetes.io/scheme: 'internal'
+            alb.ingress.kubernetes.io/success-codes: '200'
+            alb.ingress.kubernetes.io/target-type: 'ip'
+            alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16
+        spec:
+          rules:
+          - host: "vmagent.company-stage.corp.loc"
+            http:
+              paths:
+                - path: /*
+                  pathType: ImplementationSpecific
+                  backend:
+                    service:
+                      name: vmagent-vmagent
+                      port:
+                        number: 8429
+      - |
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: vmalert
+          annotations:
+            kubernetes.io/ingress.class: 'alb'
+            alb.ingress.kubernetes.io/group.name: "k8s-internal-monitoring-endpoint"
+            alb.ingress.kubernetes.io/tags: "stream=company,owner=company-devops,terraform=false"
+            alb.ingress.kubernetes.io/backend-protocol: HTTP
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS": 443}]'
+            alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+            alb.ingress.kubernetes.io/certificate-arn: 'arn:aws:acm:eu-central-1:627992770327:certificate/eb4c1866-3128-4a19-b554-816be1d44202'
+            alb.ingress.kubernetes.io/scheme: 'internal'
+            alb.ingress.kubernetes.io/success-codes: '200'
+            alb.ingress.kubernetes.io/target-type: 'ip'
+            alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16
+        spec:
+          rules:
+          - host: "vmalert.company-stage.corp.loc"
+            http:
+              paths:
+                - path: /*
+                  pathType: ImplementationSpecific
+                  backend:
+                    service:
+                      name: vmalert-vmalert
+                      port:
+                        number: 8080

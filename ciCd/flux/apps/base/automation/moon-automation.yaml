@@ -1,0 +1,174 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+    name: moon-automation
+spec:
+    interval: 5m
+    chart:
+        spec:
+            chart: moon2
+            version: 2.4.2
+            sourceRef:
+                kind: HelmRepository
+                name: aerokube
+                namespace: flux-system
+            interval: 12h
+    values:
+        ##
+        ## Custom Ingress settings. Overrides default Nginx Ingress configuration.
+        ##
+        customIngress:
+            enabled: false
+        ##
+        ## Ingress settings. This chart is using Nginx Ingress. By default, Ingress listens only on port 80 (HTTP).
+        ## Port 443 (HTTPS) is enabled only if TLS certificate and private key are provided in the fields below.
+        ##
+        ingress:
+            enabled: true
+            host: moon-automation.company-stage.corp.loc
+            ingressClassName: "nginx"
+            # ingressClassName: "aws-nlb-nginx"
+            proxyConnectTimeout: 1200
+            proxyReadTimeout: 1200
+            proxySendTimeout: 1200
+            ##
+            ## Ingress host. Replace this with your domain name.
+            ##
+            # customAnnotations:
+            # alb.ingress.kubernetes.io/security-groups: "sg-02ccb6bd0fe677437"
+            # kubernetes.io/ingress.class: nginx
+            # nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+        ##
+        ## Available configuration objects.
+        ##
+        configs:
+            ##
+            ## Default configuration object. Detailed description of the fields can be found
+            ## in documentation: https://aerokube.com/moon/latest/#configuration-object.
+            ##
+            default:
+                serviceAccountName: default
+                sessionTimeout: 10m
+                user:
+                    id: 4096
+                    name: user
+                group:
+                    id: 4096
+                    name: user
+                containers:
+                    browser:
+                        resources:
+                            limits:
+                                memory: 1024Mi
+                            requests:
+                                cpu: "500m"
+                                memory: 1024Mi
+                    ca-certs:
+                        repository: quay.io/aerokube/ca-certs
+                        resources:
+                            limits:
+                                memory: 32Mi
+                            requests:
+                                cpu: 200m
+                                memory: 32Mi
+                    defender:
+                        repository: quay.io/aerokube/defender
+                        resources:
+                            limits:
+                                memory: 256Mi
+                            requests:
+                                cpu: 150m
+                                memory: 256Mi
+                    video-recorder:
+                        repository: quay.io/aerokube/video-recorder
+                        resources:
+                            limits:
+                                memory: 512Mi
+                            requests:
+                                cpu: 250m
+                                memory: 512Mi
+                    vnc-server:
+                        repository: quay.io/aerokube/vnc-server
+                        resources:
+                            limits:
+                                memory: 64Mi
+                            requests:
+                                cpu: 100m
+                                memory: 64Mi
+                    x-server:
+                        repository: quay.io/aerokube/xvfb-server
+                        resources:
+                            limits:
+                                memory: 64Mi
+                            requests:
+                                cpu: 100m
+                                memory: 64Mi
+                storage:
+                    accessKey: ""
+                    bucket: ""
+                    endpoint: ""
+                    filename: ""
+                    pattern: ""
+                    secretKey: ""
+
+        deployment:
+            moonCPULimit: 400m
+            moonCPURequest: 400m
+            moonMemoryLimit: 512Mi
+            moonMemoryRequest: 512Mi
+            nodeSelector:
+                eks.amazonaws.com/capacityType: ON_DEMAND
+
+        ##
+        ## Available browsers set objects.
+        ##
+        browsers:
+            ##
+            ## Default browsers set object. Detailed description of the fields can be found
+            ## in documentation: https://aerokube.com/moon/latest/#browsers-set.
+            ##
+            default:
+                nodeSelector:
+                    eks.amazonaws.com/capacityType: SPOT
+                selenium:
+                    chrome:
+                        repository: quay.io/browser/google-chrome-stable
+                        default: "105.0"
+                    firefox:
+                        repository: quay.io/browser/firefox-mozilla-build
+                        default: "105.0"
+                    safari:
+                        repository: quay.io/browser/safari
+                        default: "15.0"
+
+        ##
+        ## Available quotas. If you need to have multiple quota objects - simply add them below:
+        ##
+        ## quota:
+        ##   moon: null
+        ##   alfa-team:
+        ##     namespace: alfa
+        ##     serviceAccountName: custom
+        ##     serviceAccountAnnotations: {}
+        ##   beta-team:
+        ##     namespace: beta
+        ##
+        quota:
+            ##
+            ## Default quota. Detailed description of the fields can be found
+            ## in documentation: https://aerokube.com/moon/latest/#quotas. Set it
+            ## to null when having multiple quota objects.
+            ##
+            moon:
+                namespace: automation
+
+        ##
+        ## License key. When empty default free license key is automatically used.
+        ##
+        license: ID
+
+        ##
+        ## License key secret name. License data will loaded from secret, overrides license field.
+        ##
+        licenseSecretName: # automation-company-v2-license

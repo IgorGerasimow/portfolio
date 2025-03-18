@@ -1,0 +1,17 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - secrets
+  - company-mail.yaml
+  - automation.yaml
+  - keycloak.yaml
+  - statping.yaml
+  - gamification.yaml
+  - jb.yaml
+  - foundation.yaml
+  - events-hub.yaml
+  - peer2peer.yaml
+  - th.yaml
+  - vip.yaml
+  - notification-center.yaml

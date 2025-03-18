@@ -1,0 +1,111 @@
+name: (private) Build Base Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      docker_repository:
+        description: Docker repository name, e.g. `LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY` when using GAR.
+        type: string
+        required: true
+      multi_platform:
+        description: Produce multi-platform images (e.g. amd64, and arm64)
+        type: boolean
+        default: false
+
+jobs:
+  base:
+    # When workflow triggered for AMD64-only, Setup job is re-used to build 'Base Python' image,
+    # reducing the latency associated with starting a separate job.
+    name: ${{inputs.multi_platform && 'Setup' || 'Base'}}
+    runs-on:
+    - ${{inputs.multi_platform && 'standard-1-amd64' || 'standard-2-amd64'}}
+    steps:
+      - name: Ensure GAR repository
+        uses: actions/github-script@v7
+        if: contains(inputs.docker_repository, 'docker.pkg.dev')
+        with:
+          script: |-
+            var dockerRepository = '${{inputs.docker_repository}}'
+
+            // When repository is on GAR, attempt to create it.
+            // Proactive creation is required for artifacts placement into dev repo.
+            // When one is a staging or prod, we would get the expected permissions error,
+            // that should be ignored.
+
+            var m = dockerRepository.match(/(.+)-docker.pkg.dev\/([^/]+)\/([^/]+)/)
+            var location = m[1], project = m[2], repository = m[3]
+            var gcloud_err = ''
+            try {
+              const options = {
+                listeners: {
+                  stderr: (data) => {
+                    gcloud_err += data.toString()
+                  }
+                }
+              }
+              await exec.exec(
+                `gcloud artifacts repositories create ${repository}`
+                + ' --repository-format=docker'
+                + ` --location=${location}`
+                + ` --project=${project}`,
+                [],
+                options
+              )
+            } catch (err) {
+              if (gcloud_err.indexOf('ALREADY_EXISTS') != -1) {
+                core.info('Repository already exists.')
+              } else if (gcloud_err.indexOf('PERMISSION_DENIED') != -1) {
+                core.info(
+                  'Not enough permissions to create the repository.'
+                  + ` Assuming, that the repository ${repository} already exists.`
+                )
+              } else {
+                return core.setFailed(`Failed to create a repository: ${err}`)
+              }
+            }
+
+      - if: ${{! inputs.multi_platform}}
+        name: Sudo GitHub Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{vars.SUDO_GHA_APP_ID}}
+          installation_id: ${{vars.SUDO_GHA_APP_INSTALLATION_ID}}
+          private_key: ${{secrets.SUDO_GHA_APP_PRIVATE_KEY}}
+
+      - if: ${{! inputs.multi_platform}}
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      - if: ${{! inputs.multi_platform}}
+        name: CI Metadata
+        id: meta
+        uses: ./.github/actions/metadata
+        with:
+          sudo-token: ${{steps.generate_token.outputs.token}}
+
+      - if: ${{! inputs.multi_platform}}
+        name: Setup Buildx
+        uses: ./.github/actions/setup-buildx
+
+      - if: ${{! inputs.multi_platform}}
+        name: Base Python
+        # Python 3.10 + basic userspace
+        uses: ./.github/actions/docker-build
+        with:
+          context: ./infra/docker/base
+          file: ./infra/docker/base/python.dockerfile
+          image: ${{inputs.docker_repository}}/python
+          tags: ${{steps.meta.outputs.docker_tags}}
+
+  base-mp:
+    name: Base (multi-platform)
+    needs: [base]
+    if: ${{inputs.multi_platform}}
+    uses: ./.github/workflows/docker-build-mp.yaml
+    secrets: inherit
+    with:
+      context: ./infra/docker/base
+      file: ./infra/docker/base/python.dockerfile
+      image: ${{inputs.docker_repository}}/python
+      title: Python

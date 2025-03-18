@@ -1,0 +1,38 @@
+app:
+  environment: dev
+
+  replicas: 1
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+
+  hpa:
+    enabled: false
+
+  configmap:
+    AUTH_SALT: Ahpu+o3p
+    AUTH_ACCESS_TOKEN_SECRET: access_secret
+    AUTH_ACCESS_TOKEN_TTL: 3m
+    AUTH_REFRESH_TOKEN_SECRET: refresh_secret
+    AUTH_REFRESH_TOKEN_TTL: 15m
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    fqdn: service1-api.corp-integrations-dev.com
+    locations:
+      "/":
+        servicePort: 8080
+
+  image:
+    repository: "AWS ID.dkr.ecr.eu-central-1.amazonaws.com/project/service1-api"
+    tag: "fa1074ab"
+
+
+

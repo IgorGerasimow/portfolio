@@ -1,0 +1,136 @@
+name: (private) Build Server Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      docker_repository:
+        description: Docker repository name, e.g. `LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY` when using GAR.
+        type: string
+        required: true
+      multi_platform:
+        description: Produce multi-platform images (e.g. amd64, and arm64)
+        type: boolean
+        default: false
+
+jobs:
+  # See note in images-dev.yaml why inline dispatching `if inputs.multi_platform`,
+  # rather than nested workflow.
+
+  # Group: Multi-platform
+
+  server-app-python:
+    if: ${{inputs.multi_platform}}
+    name: Python Server App Base (multi-platform)
+    uses: ./.github/workflows/docker-build-mp.yaml
+    secrets: inherit
+    with:
+      context: ./
+      build-contexts: |
+        python=docker-image://${{inputs.docker_repository}}/python:sha-${{github.sha}}
+      file: ./infra/docker/server-app-python/dockerfile
+      image: ${{inputs.docker_repository}}/server-app-python
+      title: Python Server App Base
+
+  php:
+    if: ${{inputs.multi_platform}}
+    name: PHP (multi-platform)
+    uses: ./.github/workflows/docker-build-mp.yaml
+    secrets: inherit
+    with:
+      context: ./
+      file: ./infra/docker/base/php.dockerfile
+      image: ${{inputs.docker_repository}}/php
+      title: PHP
+
+  mysql:
+    if: ${{inputs.multi_platform}}
+    name: MySQL (multi-platform)
+    needs: [php]
+    uses: ./.github/workflows/docker-build-mp.yaml
+    secrets: inherit
+    with:
+      context: ./
+      build-contexts: |
+        php=docker-image://${{inputs.docker_repository}}/php:sha-${{github.sha}}
+      file: ./infra/docker/mysql/dockerfile
+      image: ${{inputs.docker_repository}}/mysql
+      title: MySQL
+
+  # Group: Single-platform
+  server-python-sp:
+    if: ${{!inputs.multi_platform}}
+    name: Server Python
+    runs-on: [standard-2-amd64]
+    steps:
+      - name: Sudo GitHub Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{vars.SUDO_GHA_APP_ID}}
+          installation_id: ${{vars.SUDO_GHA_APP_INSTALLATION_ID}}
+          private_key: ${{secrets.SUDO_GHA_APP_PRIVATE_KEY}}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: CI Metadata
+        id: meta
+        uses: ./.github/actions/metadata
+        with:
+          sudo-token: ${{steps.generate_token.outputs.token}}
+
+      - name: Setup Buildx
+        uses: ./.github/actions/setup-buildx
+
+      - name: Python Server App Base
+        uses: ./.github/actions/docker-build
+        with:
+          context: ./
+          build-contexts: |
+            python=docker-image://${{inputs.docker_repository}}/python:sha-${{github.sha}}
+          file: ./infra/docker/server-app-python/dockerfile
+          image: ${{inputs.docker_repository}}/server-app-python
+          tags: ${{steps.meta.outputs.docker_tags}}
+
+  mysql-cp:
+    if: ${{!inputs.multi_platform}}
+    name: MySQL
+    runs-on: [standard-2-amd64]
+    steps:
+      - name: Sudo GitHub Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{vars.SUDO_GHA_APP_ID}}
+          installation_id: ${{vars.SUDO_GHA_APP_INSTALLATION_ID}}
+          private_key: ${{secrets.SUDO_GHA_APP_PRIVATE_KEY}}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: CI Metadata
+        id: meta
+        uses: ./.github/actions/metadata
+        with:
+          sudo-token: ${{steps.generate_token.outputs.token}}
+
+      - name: Setup Buildx
+        uses: ./.github/actions/setup-buildx
+
+      - name: PHP
+        uses: ./.github/actions/docker-build
+        with:
+          context: ./
+          file: ./infra/docker/base/php.dockerfile
+          image: ${{inputs.docker_repository}}/php
+          tags: ${{steps.meta.outputs.docker_tags}}
+
+      - name: MySQL
+        uses: ./.github/actions/docker-build
+        with:
+          context: ./
+          build-contexts: |
+            php=docker-image://${{inputs.docker_repository}}/php:sha-${{github.sha}}
+          file: ./infra/docker/mysql/dockerfile
+          image: ${{inputs.docker_repository}}/mysql
+          tags: ${{steps.meta.outputs.docker_tags}}

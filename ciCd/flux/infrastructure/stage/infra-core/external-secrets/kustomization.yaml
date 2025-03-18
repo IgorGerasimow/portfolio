@@ -1,0 +1,16 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+commonLabels:
+  deleteAfter: "false"
+  env: stage
+  owner: company-DevOps
+  product: infra-k8s
+  stream: company
+  temporary: "false"
+resources:
+  - ../../../base/infra-core/external-secrets/external-secrets.yaml
+  - cluster-secret-store.yaml
+  - externalsecret-strimzi.yaml
+patchesStrategicMerge:
+  - extenal-secrets.yaml

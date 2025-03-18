@@ -1,0 +1,146 @@
+name: Build (and push) of Example to Amazon ECR
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'services/Example/**'
+      - '.github/workflows/Example.yml'
+
+env:
+  SERVICE: Example
+  SERVICE_NAME: Example
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }} test execution
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ '14' ]
+    env:
+      DB_HOST: localhost
+      DB_DATABASE: test
+      DB_USER: user
+      DB_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: install packages
+        run: yarn install
+        working-directory: ./services/Example
+      - name: unit test
+        run: yarn test:cov
+        working-directory: ./services/Example
+      - name: Start database (integration tests)
+        run: docker-compose up -d
+        # no need to wait for database to be up, it is taken care by test suite
+        working-directory: ./services/Example
+      - name: Run integration test
+        run: yarn test:integration
+        working-directory: ./services/Example
+      - name: Teardown database (integration tests)
+        run: docker-compose down
+        working-directory: ./services/Example
+
+  build:
+    name: Build and publish docker image to ECR
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Build, tag image
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: Example/Example
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build a docker container
+        cd ./services/Example
+        cp ../../yarn.lock .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+    - name: Publish image to ECR
+      id: push-image
+      if: github.ref == 'refs/heads/integration'
+      run: |
+        docker push ${{ steps.build-image.outputs.image }}
+  
+  deploy-to-staging:
+    runs-on: ubuntu-latest
+    name: Deploy to Staging
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_SHA | cut -d / -f 3)
+      - name: github-actions-ek8s-toolbox step
+        id: github-actions-ek8s-toolbox
+        uses: ./devops/actions/github-actions-ek8s-toolbox
+        with:
+          eksClusterName: "tgm-use1-stag-platform"
+          awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          awsDefaultRegion: ${{ secrets.AWS_REGION }}
+          helmVersion: "3.2.4"
+          kubectlVersion: "1.18.5"
+          istioctlVersion: "1.5.7"
+          kubevalVersion: "0.15.0"
+          command: |
+            aws configure set aws_access_key_id "${{ secrets.AWS_ACCESS_KEY_ID }}"
+            aws configure set aws_secret_access_key "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+            aws configure set default.region "${{ secrets.AWS_REGION }}"
+            aws eks update-kubeconfig --name "tgm-use1-stag-platform"
+            helm ls
+            helm upgrade --install $SERVICE services/$SERVICE_NAME/helm/ -f services/$SERVICE_NAME/helm/values-staging.yaml --set image.imageTag="${{ steps.get_version.outputs.VERSION }}"
+
+  deploy-eks:
+    name: Deploy to Integration
+    if: github.ref == 'refs/heads/integration'
+    runs-on: ubuntu-latest
+    needs: [build]          
+    steps:
+      - name: Deploy new version
+        uses: Eyevinn/action-eks-kubectl@master
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          REGION: us-east-1
+          CLUSTER: backend-api-v1
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: Example/Example
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          args: set image --record deployment/Example Example=051022924265.dkr.ecr.us-east-1.amazonaws.com/Example/Example:${{ github.sha }}
+
+
+  slackNotification:
+    needs: deploy-eks
+    name: Slack Notification
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2.0.0
+      env:
+        SLACK_COLOR: '#3278BD'
+        SLACK_TITLE: Build and deploy of $SERVICE to Amazon EKS
+        SLACK_CHANNEL: tech-notices-integration
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,0 +1,16 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+    name: external-dns-cloudflare
+    namespace: infra-core
+spec:
+    values:
+        podLabels:
+            env: stage
+        metrics:
+            enabled: false
+    valuesFrom:
+        - kind: Secret
+          name: cloudflare
+          valuesKey: CF_API_TOKEN
+          targetPath: cloudflare.apiToken

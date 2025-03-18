@@ -1,0 +1,18 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: referenceservice
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`api.theguarantors.us`) && PathPrefix(`/referenceservice`)
+    kind: Rule
+    services:
+    - name: referenceservice
+      port: 3000
+      weight: 1
+      passHostHeader: true
+      responseForwarding:
+        flushInterval: 100ms

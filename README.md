@@ -2,17 +2,16 @@
 
 **Sr DevOps / Lead DevOps Engineer**
 
-- **Email:** gerasimowigor@gmail.com  
+- **Email:** i.herasimow@gmail.com
 - **Telegram:** l0000rd  
-- **Skype:** gerasimowigor  
 
-[GitHub](https://github.com/IgorGerasimov) | [LinkedIn](https://www.linkedin.com/in/igor-gerasimow-448b2337/?locale=en_US)
+[GitHub](https://github.com/IgorGerasimow) | [LinkedIn](https://www.linkedin.com/in/igor-gerasimov-a0bb6b26b/)
 
 ---
 
 ## Summary
 
-0+ Yr Multi-Cloud IT Pro | AWS Expert, Google | DevSecOps, GitOps, Platform Engine | | Skilled in cloud, containers, microservices | RTB, DeFiI am a passionate Python geek and DevOps engineer with over ten years of experience in software engineering and DevOps practices. My background in high-load distributed systems, microservices, monitoring, configuration, deployment, testing, and continuous integration has equipped me with strong technical and leadership skills. I thrive both as an individual contributor and a collaborative team player, consistently bringing diligence, dedication, and problem-solving prowess to every project.
+10+ Yr Multi-Cloud IT Pro | AWS Expert, Google | DevSecOps, GitOps, Platform Engine | | Skilled in cloud, containers, microservices | RTB, DeFiI am a passionate Python geek and DevOps engineer with over ten years of experience in software engineering and DevOps practices. My background in high-load distributed systems, microservices, monitoring, configuration, deployment, testing, and continuous integration has equipped me with strong technical and leadership skills. I thrive both as an individual contributor and a collaborative team player, consistently bringing diligence, dedication, and problem-solving prowess to every project.
 
 ---
 
@@ -132,5 +131,4 @@
 
 ## Portfolio & Projects
 
-For more details on my work and contributions, please visit my [GitHub](https://github.com/IgorGerasimov) and [LinkedIn](https://www.linkedin.com/in/igor-gerasimow-448b2337/?locale=en_US) profiles.
-# portfolio
+For more details on my work and contributions, please visit my [GitHub](https://github.com/IgorGerasimow) and [LinkedIn](https://www.linkedin.com/in/igor-gerasimov-a0bb6b26b) profiles.

@@ -1,0 +1,90 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: keycloak
+spec:
+  interval: 1m
+  chart:
+    spec:
+      chart: keycloak
+      version: 18.4.0
+      sourceRef:
+        kind: HelmRepository
+        name: keycloak
+        namespace: flux-system
+      interval: 12h
+  values:
+    fullnameOverride: "kk"
+    nameOverride: "kk"
+    image:
+      tag: 20.0.1
+    args: ["start-dev", "--proxy=edge"]
+    extraEnv: |
+      - name: KEYCLOAK_ADMIN
+        value: keycloak
+      - name: KEYCLOAK_ADMIN_PASSWORD
+        value: keycloak
+      - name: DB_VENDOR
+        value: postgres
+      - name: DB_ADDR
+        value: keycloak-stage.cr6eyrbuyl7d.eu-central-1.rds.amazonaws.com
+      - name: DB_PORT
+        value: "5432"
+      - name: DB_DATABASE
+        value: keycloak
+      - name: DB_USER
+        value: admin_keycloak
+      - name: DB_PASSWORD
+        value: aeZ_o2pah6micie5
+      - name: PROXY_ADDRESS_FORWARDING
+        value: "true"
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "256Mi"
+      limits:
+        memory: "512Mi"
+    startupProbe: |
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 30
+      timeoutSeconds: 1
+      failureThreshold: 60
+      periodSeconds: 5
+    readinessProbe: |
+      httpGet:
+        path: /realms/master
+        port: http
+      initialDelaySeconds: 30
+      timeoutSeconds: 1
+    livenessProbe: |
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 0
+      timeoutSeconds: 5
+    ingress:
+      enabled: true
+      ingressClassName: "nginx"
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+      rules:
+        - host: keycloak.company-stage.corp.loc
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - keycloak.company-stage.corp.loc
+      console:
+        enabled: true
+        ingressClassName: "nginx"
+        rules:
+          - host: keycloak.company-stage.corp.loc
+            paths:
+              - path: /admin/
+                pathType: Prefix
+    postgresql:
+      enabled: false

@@ -1,0 +1,30 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rotator-ingress
+  namespace: project
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app1.rotatorhub.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: app1-sv
+              port:
+                number: 8080
+    ### DOMAIN PARKING
+    - host: corppartners.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080

@@ -1,0 +1,45 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: victoria-metrics-operator
+spec:
+  chart:
+    spec:
+      version: 0.27.3
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    extraLabels:
+      env: prod
+    podLabels:
+      env: prod
+    image:
+      repository: victoriametrics/operator
+      tag: v0.39.0
+    replicaCount: 2
+    rbac:
+      create: true
+      pspEnabled: false
+    annotations: {}
+    securityContext: {}
+    resources:
+      limits:
+        cpu: 250m
+        memory: 400Mi
+      requests:
+        cpu: 250m
+        memory: 400Mi
+    admissionWebhooks:
+      enabled: false
+      policy: Fail
+      caBundle: ""
+      certManager:
+        enabled: false
+        issuer: {}
+    serviceMonitor:
+      enabled: true

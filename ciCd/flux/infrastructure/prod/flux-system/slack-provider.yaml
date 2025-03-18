@@ -1,0 +1,10 @@
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Provider
+metadata:
+  name: slack-provider
+spec:
+  type: slack
+  channel: deploy-aws-prod-company
+  secretRef:
+    name: slack-alert-url

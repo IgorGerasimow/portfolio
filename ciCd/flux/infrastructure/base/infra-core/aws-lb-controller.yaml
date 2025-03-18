@@ -1,0 +1,91 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aws-lb-controller
+  namespace: infra-core
+  labels:
+    app: aws-lb-controller
+    jira: "SRE-28280"
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: aws-load-balancer-controller
+      version: '1.4.4'
+      sourceRef:
+        kind: HelmRepository
+        name: eks-charts
+        namespace: flux-system
+      interval: 24h
+  values:
+    podLabels:
+      owner: company-DevOps
+      stream: company
+      env: prod
+      app: aws-lb-controller
+      temporary: "false"
+      deleteAfter: "false"
+    replicaCount: 2
+    image:
+      repository: 602401143452.dkr.ecr.eu-central-1.amazonaws.com/amazon/aws-load-balancer-controller
+      tag: v2.4.3
+      pullPolicy: IfNotPresent
+
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::ID:role/aws-loadbalancer-controller-company-prod-main-oidc
+      name: aws-load-balancer-controller
+
+    rbac:
+      create: true
+    resources:
+      limits:
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+    # Enable cert-manager
+    enableCertManager: false
+
+    # The ingress class this controller will satisfy. If not specified, controller will match all
+    # ingresses without ingress class annotation and ingresses of type alb
+    ingressClass: alb
+
+    # If enabled, targetHealth readiness gate will get injected to the pod spec for the matching endpoint pods (default true)
+    enablePodReadinessGateInject:
+
+    # Enable Shield addon for ALB (default true)
+    enableShield: false
+
+    # Enable WAF addon for ALB (default true)
+    enableWaf: false
+
+    # Enable WAF V2 addon for ALB (default true)
+    enableWafv2: false
+
+    # defaultSSLPolicy specifies the default SSL policy to use for TLS/HTTPS listeners
+    defaultSSLPolicy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+
+    # defaultTags are the tags to apply to all AWS resources managed by this controller
+    defaultTags:
+      DeleteAfter: "no"
+      Env: "prod"
+      Owner: "company-DevOps"
+      Temporary: "no"
+      Terraform: "no"
+  valuesFrom:
+    - kind: Secret
+      name: aws-lb-terraform-outputs
+      valuesKey: vpcId
+      targetPath: vpcId
+    - kind: Secret
+      name: aws-lb-terraform-outputs
+      valuesKey: region
+      targetPath: region
+    - kind: Secret
+      name: aws-lb-terraform-outputs
+      valuesKey: clusterName
+      targetPath: clusterName

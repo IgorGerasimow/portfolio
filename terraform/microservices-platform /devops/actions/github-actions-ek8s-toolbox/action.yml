@@ -1,0 +1,58 @@
+name: "github-actions-ek8s-toolbox"
+description: "Github Action to work with helm charts & AWS EKS."
+author: "Igor G"
+branding:
+  icon: "terminal"
+  color: "blue"
+inputs:
+  command:
+    description: "The command(s) to run."
+    required: true
+  eksClusterName:
+    description: "Name of the EKS cluster operate on."
+    required: true
+  awsAccessKeyId:
+    description: "Your AWS access key id to get the cluster context."
+    required: true
+  awsSecretAccessKey:
+    description: "Your AWS Secret access key to get the cluster context."
+    required: true
+  awsDefaultRegion:
+    description: "Your AWS region to get the cluster context."
+    required: false
+    default: "us-east-1"
+  helmVersion:
+    description: "helm version to install."
+    required: false
+    default: "3.2.4"
+  helmfileVersion:
+    description: "helmfile version to install."
+    required: false
+    default: "0.120.0"
+  kubectlVersion:
+    description: "kubectl version to install."
+    required: false
+    default: "1.18.5"
+  istioctlVersion:
+    description: "istioctl version to install."
+    required: false
+    default: "1.5.7"
+  kubevalVersion:
+    description: "kubeval version to install."
+    required: false
+    default: "0.15.0"
+runs:
+  using: "docker"
+  image: "docker://loord/github-actions-ek8s-toolbox:v1.7"
+ # image: "docker://docker.pkg.github.com/theguarantors/tg-modern/action-k8s-toolbox:latest"
+  args:
+    - ${{ inputs.command }}
+    - ${{ inputs.eksClusterName }}
+    - ${{ inputs.awsAccessKeyId }}
+    - ${{ inputs.awsSecretAccessKey }}
+    - ${{ inputs.awsDefaultRegion }}
+    - ${{ inputs.helmVersion }}
+    - ${{ inputs.helmfileVersion }}
+    - ${{ inputs.kubectlVersion }}
+    - ${{ inputs.istioctlVersion }}
+    - ${{ inputs.kubevalVersion }}

@@ -1,0 +1,54 @@
+app:
+  appName: "service1-api-app"
+
+  service:
+    enabled: true
+    type: ClusterIP
+    ports:
+      http-public:
+        externalPort: 8080
+        internalPort: 8080
+        protocol: TCP
+      monitoring:
+        externalPort: 8081
+        internalPort: 8081
+        protocol: TCP
+
+  livenessProbe:
+    enabled: true
+    mode: httpGet
+    httpGet:
+      port: 8081
+      path: "/health"
+
+  readinessProbe:
+    enabled: true
+    mode: httpGet
+    httpGet:
+      port: 8081
+      path: "/ready"
+
+  configmap:
+    NAMESPACE: project
+    OTEL_SERVICE_NAME: service1-api-app
+    OTEL_COLLECTOR_GRPC_ADDR: "agent.monitoring.svc:4317"
+
+    COBRA_COMMAND: "app"
+
+    SERVER_PORT: 8080
+    SERVER_HEALTH_PORT: 8081
+
+    # AUTH_SALT: TODO create secret
+    AUTH_ENABLE_START_SESSION_TIME: true
+    AUTH_ACCESS_TOKEN_ISSUER: service1-api
+    # AUTH_ACCESS_TOKEN_SECRET: TODO create secret
+    AUTH_ACCESS_TOKEN_TTL: 24h
+    AUTH_REFRESH_TOKEN_ISSUER: service1-api
+    # AUTH_REFRESH_TOKEN_SECRET: TODO create secret
+    AUTH_REFRESH_TOKEN_TTL: 168h
+
+  secrets:
+    MONGO_URI: "/global/rotatorv2/mongo/uri"
+    MONGO_USER: "/global/rotatorv2/mongo/user"
+    MONGO_PASSWORD: "/global/rotatorv2/mongo/password"
+    MONGO_DB: "/global/rotatorv2/mongo/database"

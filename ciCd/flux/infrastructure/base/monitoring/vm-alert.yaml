@@ -1,0 +1,57 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlert
+metadata:
+  name: vmalert
+spec:
+  image:
+    repository: victoriametrics/vmalert
+    tag: v1.84.0
+    pullPolicy: IfNotPresent
+  podMetadata:
+    labels:
+      owner: company-devops
+      stream: company
+      env: stage
+      product: observability
+      jira: companySTREAM-16716
+      # We need some kind of label for anti-affinity
+      app: vmalert
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vmalert
+            topologyKey: "kubernetes.io/hostname"
+          weight: 100
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 128Mi
+  selectAllByDefault: true
+  logFormat: json
+  logLevel: INFO
+  ruleSelector: {}
+  ruleNamespaceSelector: {}
+  datasource:
+    url: "http://vmselect-vmcluster-persistent:8481/select/0/prometheus"
+  remoteWrite:
+    url: "http://vminsert-vmcluster-persistent:8480/insert/0/prometheus"
+  remoteRead:
+    url: "http://vmselect-vmcluster-persistent:8481/select/0/prometheus"
+  notifiers:
+    - url: "http://alertmanager-prometheus-kube-prometheus-alertmanager-0.alertmanager-operated:9093"
+    - url: "http://alertmanager-prometheus-kube-prometheus-alertmanager-1.alertmanager-operated:9093"
+  extraArgs:
+    evaluationInterval: 15s
+    external.url: https://grafana.corp.loc
+    external.alert.source: "explore?orgId=1&left=[\"now-1h\",\"now\",\"victoriametrics-aws-stage-company\",{\"expr\": \"{{$expr|quotesEscape|crlfEscape|queryEscape}}\"},{\"mode\":\"Metrics\"},{\"ui\":[true,true,true,\"none\"]}]"
+  priorityClassName: system-cluster-critical

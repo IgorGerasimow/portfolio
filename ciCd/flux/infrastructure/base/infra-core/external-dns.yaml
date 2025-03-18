@@ -1,0 +1,83 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-dns
+  namespace: infra-core
+  labels:
+    app: external-dns
+    jira: "SRE-28280"
+spec:
+  releaseName: external-dns
+  chart:
+    spec:
+      chart: external-dns
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+      version: "6.12.2"
+  interval: 1h0m0s
+  install:
+    remediation:
+      retries: 3
+  values:
+    podLabels:
+      owner: sre
+      stream: sre
+      env: prod
+      app: aws-lb-controller
+      jira: SRE-28280
+      temporary: "false"
+      deleteAfter: "false"
+    domainFilters:
+      - prod.corp.loc
+    sources:
+      - service
+      - ingress
+    provider: aws
+    aws:
+      region: "eu-central-1"
+    extraArgs:
+      annotation-filter: "kubernetes.io/ingress.class in (alb)"
+    interval: "1m"
+    logLevel: info
+    logFormat: json
+    policy: sync
+    registry: "txt"
+    txtOwnerId: "external-dns"
+    replicas: 3
+    serviceAccount:
+      create: false
+      # Managed by terraform with irsa support
+      name: external-dns
+    rbac:
+      create: true
+      clusterRole: true
+      apiVersion: v1
+      pspEnabled: true
+    securityContext:  # TODO: manage this somewhere else in a centralized way?
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+    podSecurityContext:  # TODO: manage this somewhere else in a centralized way?
+      fsGroup: 1001
+      runAsUser: 1001
+      runAsNonRoot: true
+    resources:
+      limits:
+        memory: 128Mi
+      requests:
+        memory: 128Mi
+        cpu: 50m
+    podDisruptionBudget:
+      maxUnavailable: 1
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        namespace: monitoring
+        interval: 60s
+        scrapeTimeout: 30s
+    priorityClassName: system-cluster-critical

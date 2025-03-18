@@ -1,0 +1,75 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aws-ebs-csi-driver
+  namespace: infra-core
+spec:
+  chart:
+    spec:
+      chart: aws-ebs-csi-driver
+      version: "2.17.2"
+  values:
+    podLabels:
+      env: prod
+    useOldCSIDriver: true
+    image:
+      repository: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver
+      tag: "v1.17.0"
+    sidecars:
+      provisioner:
+        image:
+          repository: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner
+          tag: "v3.4.0-eks-1-26-latest"
+      livenessProbe:
+        image:
+          repository: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe
+          tag: "v2.9.0-eks-1-26-latest"
+      resizer:
+        image:
+          repository: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer
+          tag: "v1.7.0-eks-1-26-latest"
+      snapshotter:
+        image:
+          pullPolicy: IfNotPresent
+          repository: public.ecr.aws/eks-distro/kubernetes-csi/external-snapshotter/csi-snapshotter
+          tag: v6.2.1-eks-1-26-latest
+      nodeDriverRegistrar:
+        image:
+          pullPolicy: IfNotPresent
+          repository: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar
+          tag: v2.7.0-eks-1-26-latest
+    controller:
+      podLabels:
+        env: prod
+      k8sTagClusterId: company-prod-main
+      region: eu-central-1
+      replicaCount: 2
+      serviceAccount:
+        # Managed by Terraform
+        name: aws-ebs-csi-controller
+    node:
+      podLabels:
+        env: prod
+      serviceAccount:
+        # Managed by Terraform
+        name: aws-ebs-csi-controller
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+    storageClasses:
+    - name: ebs-gp3-encrypted
+      annotations:
+        storageclass.kubernetes.io/is-default-class: "false"
+      labels:
+        fs: ext4
+        encrypted: "true"
+      volumeBindingMode: WaitForFirstConsumer
+      reclaimPolicy: Retain
+      allowVolumeExpansion: true
+      parameters:
+        type: gp3
+        encrypted: "true"
+        csi.storage.k8s.io/fstype: ext4
+        iops: "3000"
+        throughput: "250"

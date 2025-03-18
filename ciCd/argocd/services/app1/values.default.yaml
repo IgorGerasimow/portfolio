@@ -1,0 +1,51 @@
+app:
+  appName: "service1"
+
+  service:
+    enabled: true
+    type: ClusterIP
+    ports:
+      http-public:
+        externalPort: 8080
+        internalPort: 8080
+        protocol: TCP
+
+  # TODO     monitoring/health/liveness
+
+  configmap:
+    NAMESPACE: project
+    OTEL_SERVICE_NAME: service1
+    OTEL_COLLECTOR_GRPC_ADDR: "agent.monitoring.svc:4317"
+    service1_PORT: "8080"
+
+    GRPC_OFFERS_ADDRESS: "offers-sv:8080"
+    GRPC_HOST_CUSTOM_LANDINGS: "custom-landings-sv:8081"
+    POSTBACKS_URL: "http://postbacks-sv:8080"
+    DOMAIN_PARKING_URL: "domain-parking-sv:8080"
+    STATISTICS_URL: statistics-sv:8080
+
+    # CLICKHOUSE
+    DB_PORT_MG_DICTIONARY: 27017
+
+    SUBJECT_PLAYER_STREAM_UPDATED_EVENT_COM: "corp.project.com.service1.player.stream.update.event"
+    SUBJECT_PLAYER_STREAM_UPDATED_EVENT_UA: "corp.project.ua.service1.player.stream.update.event"
+
+  secrets:
+    AWS_KEY: "/global/s3/key_id"
+    AWS_SECRET: "/global/s3/secret"
+
+    GCP_API_TOKEN: "/global/google/gcp_api_token"
+
+    NATS_ADDRESSES: "/global/nats/addr"
+    NATS_NKEY: "/global/nats/nkey/client"
+
+    # CLICKHOUSE
+    # credentials
+    CLH_HOST: "/global/clickhouse/host"
+    DB_USERNAME_CH: "/global/clickhouse/user"
+    DB_PASSWORD_CH: "/global/clickhouse/pwd"
+    CLH_DB_NAME: "/global/clickhouse/db"
+    # migrator mongo credentials
+    DB_HOST_MG_DICTIONARY: "/global/clickhouse/migrator/mongo_host"
+    DB_USERNAME_MG_DICTIONARY: "/global/clickhouse/migrator/mongo_user"
+    DB_PASSWORD_MG_DICTIONARY: "/global/clickhouse/migrator/mongo_pwd"

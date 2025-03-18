@@ -1,0 +1,28 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: content-studio
+spec:
+  values:
+    tag: v1.0.308-main
+    configmap:
+      API_company_BRAND_CONFIG_ENDPOINT: "https://company-brand-configuration.kube.private/"
+      API_company_BRAND_CONFIG_TIMEOUT: 5000
+      TEMPLATE_RENDERER_SERVICE_URL: th-template-renderer.company-stage.corp.loc:443
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      TEMPLATE_RENDERER_SERVICE_URL_TLS: 1
+      DATABASE_HOST: dm-stage.cr6eyrbuyl7d.eu-central-1.rds.amazonaws.com
+      DATABASE_PORT: 3306
+      DATABASE_NAME: th_content_studio
+      company_SERVICE_API_URL: http://api.company.company-stage.corp.loc/
+      company_SERVICE_MASTER_TOKEN: 'wi78gNgFsJU4JVrwfwzCLTN5BEBIXRMK'
+      company_SERVICE_REQUEST_TIMEOUT: 5000
+    labels:
+      env: stage
+      replicaCount: 1
+    ingress:
+      hosts:
+        - host: th-content-studio.company-stage.corp.loc
+          paths: /
+          port: 80

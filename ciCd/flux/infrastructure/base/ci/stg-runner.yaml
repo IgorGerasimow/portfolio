@@ -1,0 +1,38 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: corp-stg-runner
+spec:
+  releaseName: corp-stg-runner
+  chart:
+    spec:
+      chart: gitlab-runner
+      sourceRef:
+        kind: HelmRepository
+        name: gitlab-runner
+        namespace: flux-system
+      version: 0.49.1
+  interval: 10m
+  values:
+    fullnameOverride: corp-stg-runner
+    gitlabUrl: https://git.corp.com/
+    runnerRegistrationToken: "GR1348941vbqmJ6xPzJzj_rFkP1Nc"
+    rbac:
+      create: true
+      serviceAccountName: corp-stg-runner
+      serviceAccountAnnotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::627992770327:role/gitlab-runner-company-stage-main-oidc
+    runners:
+      privileged: true
+      serviceAccountName: corp-stg-runner
+      name: company-corp-stg
+      tags: company-corp-stg
+      config: |
+        [[runners]]
+          [runners.kubernetes]
+            namespace = "{{.Release.Namespace}}"
+            image = "ubuntu:16.04"
+            node_selector = 'eks.amazonaws.com/capacityType = SPOT'
+    nodeSelector:
+      eks.amazonaws.com/capacityType: ON_DEMAND

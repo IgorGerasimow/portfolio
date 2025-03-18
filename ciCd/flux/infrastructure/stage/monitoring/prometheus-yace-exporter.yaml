@@ -1,0 +1,1107 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: prometheus-yace-exporter
+  namespace: monitoring
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  releaseName: prometheus-yace-exporter
+  chart:
+    spec:
+      chart: prometheus-yace-exporter
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-yace-exporter
+        namespace: flux-system
+      version: "0.5.0"
+  interval: 30m
+  values:
+    extraArgs:
+      scraping-interval: 300
+    podLabels:
+      owner: company-devops
+      stream: company
+      env: stage
+      app: prometheus-yace-exporter
+      product: observability
+      jira: companySTREAM-13091
+    fullnameOverride: prometheus-yace-exporter
+    image:
+      repository: ghcr.io/nerdswords/yet-another-cloudwatch-exporter
+      tag: v0.35.0-alpha
+    serviceAccount:
+      create: false
+      name: yace
+    serviceMonitor:
+      enabled: false
+    resources:
+      requests:
+        cpu: 20m
+        memory: 100Mi
+      limits:
+        memory: 200Mi
+    config: |-
+      apiVersion: v1alpha1
+      discovery:
+        exportedTagsOnMetrics:
+          ebs:
+            - Name
+            - Stream
+            - Owner
+            - Env
+          rds:
+            - Stream
+            - Team
+            - Name
+            - Jira
+            - Environment
+            - Owner
+            - App
+            - Product
+            - Env
+          ec:
+            - Stream
+            - Owner
+            - Env
+          ec2:
+            - Stream
+            - Owner
+            - Env
+          asg:
+            - Stream
+            - Owner
+            - Env
+            - Temporary
+          es:
+            - Stream
+            - Owner
+            - Env
+        jobs:
+          - type: ec2
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: CPUUtilization
+              statistics:
+              - Average
+            - name: CPUCreditUsage
+              statistics:
+              - Average
+            - name: CPUCreditBalance
+              statistics:
+              - Average
+            - name: NetworkIn
+              statistics:
+              - Average
+            - name: NetworkOut
+              statistics:
+              - Average
+            - name: StatusCheckFailed
+              statistics:
+              - Sum
+            - name: StatusCheckFailed_Instance
+              statistics:
+              - Sum
+            - name: StatusCheckFailed_System
+              statistics:
+              - Sum
+          - type: ec
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: CurrConnections
+              statistics:
+              - Maximum
+            - name: EngineCPUUtilization
+              statistics:
+              - Maximum
+            - name: Evictions
+              statistics:
+              - Maximum
+            - name: DatabaseMemoryUsagePercentage
+              statistics:
+              - Maximum
+            - name: ReplicationLag
+              statistics:
+              - Maximum
+            - name: SaveInProgress
+              statistics:
+              - Maximum
+            - name: StringBasedCmdsLatency
+              statistics:
+              - Maximum
+            - name: CacheMisses
+              statistics:
+              - Maximum
+            - name: CacheHits
+              statistics:
+              - Maximum
+          - type: es
+            regions:
+              - eu-central-1
+            period: 60
+            length: 120
+            metrics:
+            - name: SearchableDocuments
+              statistics:
+                - Average
+            - name: FreeStorageSpace
+              statistics:
+                - Minimum
+            - name: WarmFreeStorageSpace
+              statistics:
+                - Minimum
+            - name: ClusterStatus.green
+              statistics:
+                - Maximum
+            - name: ClusterStatus.yellow
+              statistics:
+                - Maximum
+            - name: ClusterStatus.red
+              statistics:
+                - Maximum
+            - name: ClusterIndexWritesBlocked
+              statistics:
+                - Maximum
+            - name: IndexingRate
+              statistics:
+                - Average
+            - name: SearchRate
+              statistics:
+                - Average
+            - name: IndexingLatency
+              statistics:
+                - Average
+            - name: SearchLatency
+              statistics:
+                - Average
+            - name: 2xx
+              statistics:
+                - Sum
+            - name: 4xx
+              statistics:
+                - Sum
+            - name: 5xx
+              statistics:
+                - Sum
+            - name: MasterReachableFromNode
+              statistics:
+                - Maximum
+            - name: AutomatedSnapshotFailure
+              statistics:
+                - Maximum
+            - name: Nodes
+              statistics:
+                - Minimum
+                - Maximum
+            - name: DeletedDocuments
+              statistics:
+                - Average
+            - name: ElasticsearchRequests
+              statistics:
+                - Sum
+            - name: InvalidHostHeaderRequests
+              statistics:
+                - Sum
+            - name: ThreadpoolWriteThreads
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolWriteQueue
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolWriteRejected
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolIndexThreads
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolIndexQueue
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolIndexRejected
+              statistics:
+                - Maximum
+            - name: ThreadpoolSearchThreads
+              statistics:
+                - Maximum
+            - name: ThreadpoolSearchQueue
+              statistics:
+                - Maximum
+            - name: ThreadpoolSearchRejected
+              statistics:
+                - Maximum
+            - name: ThreadpoolForce_mergeThreads
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolForce_mergeQueue
+              statistics:
+                - Maximum
+                - Average
+                - Sum
+            - name: ThreadpoolForce_mergeRejected
+              statistics:
+                - Maximum
+            - name: CPUUtilization
+              statistics:
+                - Maximum
+            - name: JVMMemoryPressure
+              statistics:
+                - Maximum
+            - name: SysMemoryUtilization
+              statistics:
+                - Maximum
+            - name: JVMGCYoungCollectionCount
+              statistics:
+                - Maximum
+            - name: JVMGCYoungCollectionTime
+              statistics:
+                - Maximum
+            - name: JVMGCOldCollectionCount
+              statistics:
+                - Maximum
+            - name: JVMGCOldCollectionTime
+              statistics:
+                - Maximum
+            - name: MasterCPUUtilization
+              statistics:
+                - Maximum
+            - name: MasterJVMMemoryPressure
+              statistics:
+                - Maximum
+            - name: HotToWarmMigrationFailureCount
+              statistics:
+                - Maximum
+            - name: WarmToColdMigrationFailureCount
+              statistics:
+                - Maximum
+            - name: Shards.active
+              statistics:
+                - Sum
+            - name: Shards.unassigned
+              statistics:
+                - Sum
+            - name: Shards.delayedUnassigned
+              statistics:
+                - Sum
+            - name: Shards.activePrimary
+              statistics:
+                - Sum
+            - name: Shards.initializing
+              statistics:
+                - Sum
+            - name: Shards.relocating
+              statistics:
+                - Sum
+            - name: KibanaReportingRequestCount
+              statistics:
+                - Sum
+            - name: KibanaReportingSuccessCount
+              statistics:
+                - Sum
+            - name: HotToWarmMigrationQueueSize
+              statistics:
+                - Maximum
+            - name: WarmCPUUtilization
+              statistics:
+                - Maximum
+                - Average
+            - name: WarmStorageSpaceUtilization
+              statistics:
+                - Maximum
+            - name: HotStorageSpaceUtilization
+              statistics:
+                - Maximum
+            - name: WarmToColdMigrationQueueSize
+              statistics:
+                - Maximum
+          - type: rds
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: BinLogDiskUsage
+              statistics:
+                - Average
+            - name: BurstBalance
+              statistics:
+                - Average
+            - name: CPUUtilization
+              statistics:
+                - Average
+            - name: CPUCreditUsage
+              statistics:
+                - Average
+            - name: CPUCreditBalance
+              statistics:
+                - Average
+            - name: DatabaseConnections
+              statistics:
+                - Average
+            - name: DiskQueueDepth
+              statistics:
+                - Average
+                - Maximum
+            - name: FailedSQLServerAgentJobsCount
+              statistics:
+                - Average
+            - name: FreeableMemory
+              statistics:
+                - Average
+            - name: FreeStorageSpace
+              statistics:
+                - Average
+            - name: MaximumUsedTransactionIDs
+              statistics:
+                - Average
+            - name: NetworkReceiveThroughput
+              statistics:
+                - Average
+            - name: NetworkTransmitThroughput
+              statistics:
+                - Average
+            - name: OldestReplicationSlotLag
+              statistics:
+                - Average
+            - name: ReadIOPS
+              statistics:
+                - Average
+            - name: ReadLatency
+              statistics:
+                - Maximum
+                - Average
+            - name: ReadThroughput
+              statistics:
+                - Average
+            - name: ReplicaLag
+              statistics:
+                - Average
+            - name: ReplicationSlotDiskUsage
+              statistics:
+                - Average
+            - name: SwapUsage
+              statistics:
+                - Average
+            - name: TransactionLogsDiskUsage
+              statistics:
+                - Average
+            - name: TransactionLogsGeneration
+              statistics:
+                - Average
+            - name: WriteIOPS
+              statistics:
+                - Average
+            - name: WriteLatency
+              statistics:
+                - Maximum
+                - Average
+            - name: WriteThroughput
+              statistics:
+                - Average
+            - name: EBSByteBalance%
+              statistics:
+                - Average
+            - name: EBSIOBalance%
+              statistics:
+                - Average
+          - type: ebs
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: VolumeReadBytes
+              statistics:
+                - Sum
+            - name: VolumeWriteBytes
+              statistics:
+                - Sum
+            - name: VolumeReadOps
+              statistics:
+                - Sum
+            - name: VolumeWriteOps
+              statistics:
+                - Sum
+            - name: VolumeTotalReadTime
+              statistics:
+                - Sum
+            - name: VolumeTotalWriteTime
+              statistics:
+                - Sum
+            - name: VolumeIdleTime
+              statistics:
+                - Sum
+            - name: VolumeQueueLength
+              statistics:
+                - Average
+            - name: VolumeThroughputPercentage
+              statistics:
+                - Average
+            - name: VolumeConsumedReadWriteOps
+              statistics:
+                - Average
+            - name: BurstBalance
+              statistics:
+                - Average
+          - type: alb
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: ActiveConnectionCount
+              statistics:
+              - Sum
+            - name: ClientTLSNegotiationErrorCount
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: ConsumedLCUs
+              statistics:
+              - Sum
+            - name: HTTP_Fixed_Response_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTP_Redirect_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTP_Redirect_Url_Limit_Exceeded_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_3XX_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_4XX_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_5XX_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_500_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_502_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_503_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_504_Count
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: IPv6ProcessedBytes
+              statistics:
+              - Sum
+            - name: IPv6RequestCount
+              statistics:
+              - Sum
+            - name: NewConnectionCount
+              statistics:
+              - Sum
+            - name: ProcessedBytes
+              statistics:
+              - Sum
+            - name: RejectedConnectionCount
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: RequestCount
+              statistics:
+              - Sum
+            - name: RuleEvaluations
+              statistics:
+              - Sum
+            - name: ELBAuthError
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: ELBAuthFailure
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: ELBAuthLatency
+              statistics:
+              - Average
+            - name: ELBAuthRefreshTokenSuccess
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: ELBAuthSuccess
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: ELBAuthUserClaimsSizeExceeded
+              statistics:
+              - Sum
+              nilToZero: true
+          - type: elb
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: BackendConnectionErrors
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HealthyHostCount
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_Backend_2XX
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_Backend_3XX
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_Backend_4XX
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_Backend_5XX
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_4XX
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: HTTPCode_ELB_5XX
+              statistics:
+              - Sum
+            - name: Latency
+              statistics:
+              - Average
+              - p95
+            - name: RequestCount
+              statistics:
+              - Sum
+            - name: SpilloverCount
+              statistics:
+              - Sum
+              nilToZero: true
+            - name: SurgeQueueLength
+              statistics:
+              - Maximum
+              nilToZero: true
+            - name: UnHealthyHostCount
+              statistics:
+              - Minimum
+              nilToZero: true
+          - type: s3
+            regions:
+              - eu-central-1
+            metrics:
+            - name: NumberOfObjects
+              statistics:
+                - Average
+              period: 86400
+              length: 172800
+              additionalDimensions:
+                - name: StorageType
+                  value: AllStorageTypes
+            - name: BucketSizeBytes
+              statistics:
+                - Average
+              period: 86400
+              length: 172800
+              additionalDimensions:
+                - name: StorageType
+                  value: StandardStorage
+          - type: s3
+            awsDimensions:
+              - FilterId
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: BytesDownloaded
+              statistics:
+                - Sum
+                - Average
+            - name: BytesUploaded
+              statistics:
+                - Sum
+                - Average
+            - name: 4xxErrors
+              statistics:
+                - Average
+            - name: 5xxErrors
+              statistics:
+                - Average
+            - name: FirstByteLatency
+              statistics:
+                - p95
+            - name: TotalRequestLatency
+              statistics:
+                - p95
+          - type: asg
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: GroucompinSize
+              statistics:
+              - Average
+            - name: GroucompaxSize
+              statistics:
+              - Average
+            - name: GroupDesiredCapacity
+              statistics:
+              - Average
+            - name: GroupPendingInstances
+              statistics:
+              - Average
+          - type: kafka
+            regions:
+              - eu-central-1
+            period: 300
+            length: 300
+            metrics:
+            - name: MaxOffsetLag
+              statistics:
+              - Maximum
+          - type: kafka
+            regions:
+              - eu-central-1
+            period: 60
+            length: 60
+            metrics: # https://docs.aws.amazon.com/msk/latest/developerguide/metrics-details.html
+            # Metrics monitoring level: DEFAULT
+            - name: ActiveControllerCount
+              statistics:
+              - Sum
+            - name: BurstBalance
+              statistics:
+              - Sum
+            - name: BytesInPerSec
+              statistics:
+              - Sum
+              - Average
+            - name: BytesOutPerSec
+              statistics:
+              - Sum
+              - Average
+            - name: ClientConnectionCount
+              statistics:
+              - Sum # maybe avg
+            - name: ConnectionCount
+              statistics:
+              - Sum # maybe avg
+            - name: CPUCreditBalance
+              period: 300
+              statistics:
+              - Average
+            - name: CpuIdle
+              statistics:
+              - Average
+            - name: CpuIoWait
+              statistics:
+              - Average
+            - name: CpuSystem
+              statistics:
+              - Average
+            - name: CpuUser
+              statistics:
+              - Average
+            - name: GlobalPartitionCount
+              statistics:
+              - Sum # maybe avg
+            - name: GlobalTopicCount
+              statistics:
+              - Sum # maybe avg
+            - name: EstimatedMaxTimeLag
+              statistics:
+              - Average
+            - name: KafkaAppLogsDiskUsed
+              statistics:
+              - Average
+            - name: KafkaDataLogsDiskUsed
+              statistics:
+              - Average
+            - name: LeaderCount
+              statistics:
+              - Sum
+            - name: MaxOffsetLag
+              statistics:
+              - Maximum
+            - name: MemoryBuffered
+              statistics:
+              - Average
+            - name: MemoryCached
+              statistics:
+              - Average
+            - name: MemoryFree
+              statistics:
+              - Average
+            - name: HeacompemoryAfterGC
+              statistics:
+              - Average
+            - name: MemoryUsed
+              statistics:
+              - Average
+            - name: MessagesInPerSec
+              statistics:
+              - Average
+            - name: NetworkRxDropped
+              statistics:
+              - Average
+            - name: NetworkRxErrors
+              statistics:
+              - Average
+            - name: NetworkRxPackets
+              statistics:
+              - Average
+            - name: NetworkTxDropped
+              statistics:
+              - Average
+            - name: NetworkTxErrors
+              statistics:
+              - Average
+            - name: NetworkTxPackets
+              statistics:
+              - Average
+            - name: OfflinePartitionsCount
+              statistics:
+              - Sum
+            - name: PartitionCount
+              statistics:
+              - Sum
+            - name: ProduceTotalTimeMsMean
+              statistics:
+              - Average
+            - name: RequestBytesMean
+              statistics:
+              - Average
+            - name: RequestTime
+              statistics:
+              - Average
+            - name: RootDiskUsed
+              statistics:
+              - Average
+            - name: SumOffsetLag
+              statistics:
+              - Sum
+            - name: SwapFree
+              statistics:
+              - Average
+            - name: SwapUsed
+              statistics:
+              - Average
+            - name: TrafficShaping
+              statistics:
+              - Average
+            - name: UnderMinIsrPartitionCount
+              statistics:
+              - Average
+            - name: UnderReplicatedPartitions
+              statistics:
+              - Average
+            - name: ZooKeeperRequestLatencyMsMean
+              statistics:
+              - Average
+            - name: ZooKeeperSessionState
+              statistics:
+              - Average
+            # Metrics monitoring level: PER_BROKER
+            - name: BwInAllowanceExceeded
+              statistics:
+              - Average
+            - name: BwOutAllowanceExceeded
+              statistics:
+              - Average
+            - name: ConnTrackAllowanceExceeded
+              statistics:
+              - Average
+            - name: ConnectionCloseRate
+              statistics:
+              - Average
+              - Sum
+            - name: ConnectionCreationRate
+              statistics:
+              - Average
+              - Sum
+            - name: VolumeQueueLength
+              statistics:
+              - Average
+            - name: VolumeReadBytes
+              statistics:
+              - Sum
+            - name: VolumeReadOps
+              statistics:
+              - Average
+            - name: VolumeTotalReadTime
+              statistics:
+              - Average
+            - name: VolumeTotalWriteTime
+              statistics:
+              - Average
+            - name: VolumeWriteBytes
+              statistics:
+              - Sum
+            - name: VolumeWriteOps
+              statistics:
+              - Average
+            - name: CpuCreditUsage
+              statistics:
+              - Average
+            - name: FetchConsumerLocalTimeMsMean
+              statistics:
+              - Average
+            - name: FetchConsumerRequestQueueTimeMsMean
+              statistics:
+              - Average
+            - name: FetchConsumerResponseQueueTimeMsMean
+              statistics:
+              - Average
+            - name: FetchConsumerResponseSendTimeMsMean
+              statistics:
+              - Average
+            - name: FetchConsumerTotalTimeMsMean
+              statistics:
+              - Average
+            - name: FetchFollowerLocalTimeMsMean
+              statistics:
+              - Average
+            - name: FetchFollowerRequestQueueTimeMsMean
+              statistics:
+              - Average
+            - name: FetchFollowerResponseQueueTimeMsMean
+              statistics:
+              - Average
+            - name: FetchFollowerResponseSendTimeMsMean
+              statistics:
+              - Average
+            - name: FetchFollowerTotalTimeMsMean
+              statistics:
+              - Average
+            - name: FetchMessageConversionsPerSec
+              statistics:
+              - Average
+            - name: FetchThrottleByteRate
+              statistics:
+              - Average
+              - Sum
+            - name: FetchThrottleQueueSize
+              statistics:
+              - Average
+              - Sum
+            - name: FetchThrottleTime
+              statistics:
+              - Average
+              - Sum
+            - name: NetworkProcessorAvgIdlePercent
+              statistics:
+              - Average
+            - name: PpsAllowanceExceeded
+              statistics:
+              - Average
+            - name: ProduceLocalTimeMsMean
+              statistics:
+              - Average
+            - name: ProduceMessageConversionsPerSec
+              statistics:
+              - Average
+            - name: ProduceMessageConversionsTimeMsMean
+              statistics:
+              - Average
+            - name: ProduceRequestQueueTimeMsMean
+              statistics:
+              - Average
+            - name: ProduceResponseQueueTimeMsMean
+              statistics:
+              - Average
+            - name: ProduceResponseSendTimeMsMean
+              statistics:
+              - Average
+            - name: ProduceThrottleByteRate
+              statistics:
+              - Average
+              - Sum
+            - name: ProduceThrottleQueueSize
+              statistics:
+              - Average
+            - name: ProduceThrottleTime
+              statistics:
+              - Average
+            - name: ProduceTotalTimeMsMean
+              statistics:
+              - Average
+            - name: RemoteBytesInPerSec
+              statistics:
+              - Sum
+            - name: RemoteBytesOutPerSec
+              statistics:
+              - Sum
+            - name: RemoteLogManagerTasksAvgIdlePercent
+              statistics:
+              - Average
+            - name: RemoteLogReaderAvgIdlePercent
+              statistics:
+              - Average
+            - name: RemoteLogReaderTaskQueueSize
+              statistics:
+              - Average
+            - name: RemoteReadErrorPerSec
+              statistics:
+              - Average
+            - name: RemoteReadRequestsPerSec
+              statistics:
+              - Average
+            - name: RemoteWriteErrorPerSec
+              statistics:
+              - Average
+            - name: ReplicationBytesInPerSec
+              statistics:
+              - Sum
+            - name: ReplicationBytesOutPerSec
+              statistics:
+              - Sum
+            - name: RequestExemptFromThrottleTime
+              statistics:
+              - Average
+            - name: RequestHandlerAvgIdlePercent
+              statistics:
+              - Average
+            - name: RequestThrottleQueueSize
+              statistics:
+              - Average
+            - name: RequestThrottleTime
+              statistics:
+              - Average
+            - name: TCPConnections
+              statistics:
+              - Average
+            - name: TotalTierBytesLag
+              statistics:
+              - Sum
+            - name: TrafficBytes
+              statistics:
+              - Sum
+            # Metrics monitoring level: PER_TOPIC_PER_BROKER
+            - name: FetchMessageConversionsPerSec
+              statistics:
+              - Average
+            - name: MessagesInPerSec
+              statistics:
+              - Average
+            - name: ProduceMessageConversionsPerSec
+              statistics:
+              - Average
+            - name: RemoteBytesInPerSec
+              statistics:
+              - Average
+              - Sum
+            - name: RemoteBytesOutPerSec
+              statistics:
+              - Average
+              - Sum
+            - name: RemoteReadErrorPerSec
+              statistics:
+              - Average
+            - name: RemoteReadRequestsPerSec
+              statistics:
+              - Average
+            - name: RemoteWriteErrorPerSec
+              statistics:
+              - Average
+            # Metrics monitoring level: PER_TOPIC_PER_PARTITION
+            - name: EstimatedTimeLag
+              statistics:
+              - Average
+              - Sum
+              - Maximum
+            - name: OffsetLag
+              statistics:
+              - Average
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  annotations:
+    meta.helm.sh/release-name: prometheus-yace-exporter
+    meta.helm.sh/release-namespace: monitoring
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: prometheus-yace-exporter
+  namespace: monitoring
+spec:
+  endpoints:
+    - path: /metrics
+      scrapeTimeout: 10s
+      targetPort: http
+      metricRelabelings:
+        - sourceLabels: [tag_Owner]
+          targetLabel: owner
+          action: replace
+          regex: (.*)
+          replacement: ${1}
+        - sourceLabels: [tag_Stream]
+          targetLabel: stream
+          action: replace
+          regex: (.*)
+          replacement: ${1}
+        - sourceLabels: [tag_Env]
+          targetLabel: env
+          action: replace
+          regex: (.*)
+          replacement: ${1}
+        - sourceLabels: [tag_Team]
+          targetLabel: team
+          action: replace
+          regex: (.*)
+          replacement: ${1}
+        - sourceLabels: [tag_Name]
+          targetLabel: aws_resource_name
+          action: replace
+          regex: (.*)
+          replacement: ${1}
+        - sourceLabels: [tag_Temporary]
+          targetLabel: temporary
+          action: replace
+          regex: (.*)
+          replacement: ${1}
+        - action: labeldrop
+          regex: tag_.+
+  jobLabel: prometheus-yace-exporter-stage
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: prometheus-yace-exporter
+      app.kubernetes.io/name: prometheus-yace-exporter

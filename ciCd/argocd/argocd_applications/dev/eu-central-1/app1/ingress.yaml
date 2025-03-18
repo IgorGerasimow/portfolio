@@ -1,0 +1,75 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: service1-ingress
+  namespace: project
+  annotations:
+    nginx.ingress.kubernetes.io/client-body-buffer-size: 64k
+    nginx.ingress.kubernetes.io/client-header-buffer-size: 1000k
+    nginx.ingress.kubernetes.io/http2-max-header-size: 96k
+    nginx.ingress.kubernetes.io/large-client-header-buffers: 4 1000k
+    nginx.ingress.kubernetes.io/proxy-body-size: 150m
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 960k
+    nginx.ingress.kubernetes.io/server-snippet: | # this is where the magic happens
+      client_header_buffer_size 1000k;
+      large_client_header_buffers 4 1000k;
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: service1.corp-integrations-dev.com
+      http:
+        paths:
+          - path: /service1
+            pathType: Prefix
+            backend:
+              service:
+                name: service1-sv
+                port:
+                  number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: service1-ingress-s3-storage
+  namespace: project
+  annotations:
+    nginx.ingress.kubernetes.io/upstream-vhost: service1-dev-project-com.s3.eu-central-1.amazonaws.com
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "https"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: service1.corp-integrations-dev.com
+      http:
+        paths:
+          - path: /storage
+            pathType: Prefix
+            backend:
+              service:
+                name: service1-service-s3-storage-static-sv
+                port:
+                  number: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: service1-ingress-s3-front
+  namespace: project
+  annotations:
+    nginx.ingress.kubernetes.io/upstream-vhost: service1.corp-integrations-dev.com.s3-website.eu-central-1.amazonaws.com
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "http"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: service1.corp-integrations-dev.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: service1-service-s3-front-static-sv
+                port:
+                  number: 80

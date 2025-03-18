@@ -1,0 +1,120 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  labels:
+    owner: company-devops
+    stream: company
+    env: stage
+    app: vmalert
+  name: vmagent-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: vmagent
+      rules:
+        - alert: Vmagent Persistent Queue Is Dropping Data
+          expr: sum(increase(vm_persistentqueue_bytes_dropped_total[5m])) by (job, instance) > 0
+          for: 1m
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Instance {{ $labels.instance }} is dropping data from persistent queue"
+            description: "Vmagent dropped {{ $value | humanize1024 }} from persistent queue on instance {{ $labels.instance }} for the last 1m."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        #  Scrape erros is useles till we implement non-scrape lable, should be uncommented after https://jira.comp.tech/browse/SRE-30018
+        # - alert: Vmagent Too Many Scrape Errors
+        #   expr: sum(increase(vm_promscrape_scrapes_failed_total[5m])) by (job, instance) > 0
+        #   for: 5m
+        #   labels:
+        #     severity: warning
+        #     owner: company-devops
+        #     stream: company
+        #   annotations:
+        #     summary: 'Job "{{ $labels.job }}" on instance {{ $labels.instance }} fails to scrape targets for last 5m'
+        #     runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmagent Too Many Write Errors
+          expr: |
+            (sum(increase(vm_ingestserver_request_errors_total[5m])) by (job, instance)
+            +
+            sum(increase(vmagent_http_request_errors_total[5m])) by (job, instance)) > 0
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: 'Job "{{ $labels.job }}" on instance {{ $labels.instance }} responds with errors to write requests for last 5m.'
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmagent Too Many Remote Write Errors
+          expr: sum(rate(vmagent_remotewrite_retries_count_total[5m])) by(job, instance, url) > 0.02
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: 'Job "{{ $labels.job }}" on instance {{ $labels.instance }} fails to push to remote storage'
+            description: "Vmagent fails to push data via remote write protocol to destination \"{{ $labels.url }}\"\n Ensure that destination is up and reachable."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmagent Remote Write Connection Is Saturated
+          expr: rate(vmagent_remotewrite_send_duration_seconds_total[5m]) > 0.9
+          for: 15m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: 'Remote write connection from "{{ $labels.job }}" (instance {{ $labels.instance }}) to {{ $labels.url }} is saturated'
+            description: "The remote write connection between vmagent \"{{ $labels.job }}\" (instance {{ $labels.instance }}) and destination \"{{ $labels.url }}\" is saturated by more than 90% and vmagent won't be able to keep up.\n This usually means that `-remoteWrite.queues` command-line flag must be increased in order to increase the number of connections per each remote storage."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        # Not sure do we need next 2 alerts or not
+        - alert: Vmagent Series Limit Hour Reached
+          expr: (vmagent_hourly_series_limit_current_series / vmagent_hourly_series_limit_max_series) > 0.9
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Instance {{ $labels.instance }} reached 90% of the limit"
+            description: "Max series limit set via -remoteWrite.maxHourlySeries flag is close to reaching the max value. Then samples for new time series will be dropped instead of sending them to remote storage systems."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmagent Series Limit Day Reached
+          expr: (vmagent_daily_series_limit_current_series / vmagent_daily_series_limit_max_series) > 0.9
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Instance {{ $labels.instance }} reached 90% of the limit"
+            description: "Max series limit set via -remoteWrite.maxDailySeries flag is close to reaching the max value. Then samples for new time series will be dropped instead of sending them to remote storage systems."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        # Target has started to produce many samples"
+        - alert: "Warning: Target has started to produce many samples"
+          expr: scrape_samples_scraped{job!="kube-state-metrics", job!="apiserver", service!~"postgres-exporter-company-boris-company-journey-activity-prometheus|postgres-exporter-gamification-gamification-prometheus-postgres", product!="confluent"}[1h] > 50000
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Job {{ $labels.job }} (instance {{ $labels.instance }}) has started to produce many samples."
+            description: "Check the metrics of job {{ $labels.job }} (instance {{ $labels.instance }}) to prevent lack of free space on vmstorage."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: "Warning: Target has started to produce many samples"
+          expr: scrape_samples_scraped{product="confluent"}[1h] > 70000
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Job {{ $labels.job }} (instance {{ $labels.instance }}) has started to produce many samples."
+            description: "Check the metrics of job {{ $labels.job }} (instance {{ $labels.instance }}) to prevent lack of free space on vmstorage."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#

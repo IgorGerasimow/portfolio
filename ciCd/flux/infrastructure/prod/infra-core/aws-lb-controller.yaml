@@ -1,0 +1,25 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aws-lb-controller
+  namespace: infra-core
+  labels:
+    app: aws-lb-controller
+spec:
+  chart:
+    spec:
+      chart: aws-load-balancer-controller
+      version: '1.6.2'
+  values:
+    podLabels:
+      env: prod
+    image:
+      tag: v2.6.2
+
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::ID:role/aws-loadbalancer-controller-company-prod-main-oidc
+
+    defaultTags:
+      Env: "prod"

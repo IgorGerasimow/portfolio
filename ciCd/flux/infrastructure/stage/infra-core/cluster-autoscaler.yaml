@@ -1,0 +1,46 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cluster-autoscaler
+  namespace: infra-core
+spec:
+  chart:
+    spec:
+      version: 9.18.0
+  values:
+    additionalLabels:
+      env: stage
+
+    extraArgs:
+      balance-similar-node-groups: true
+      skip-nodes-with-system-pods: false
+      skip-nodes-with-local-storage: false
+      scale-down-enabled: true
+      scale-down-utilization-threshold: 0.85
+      scale-down-non-empty-candidates-count: 5
+      max-node-provision-time: 5m0s
+      scan-interval: 10s
+      scale-down-delay-after-add: 10m
+      scale-down-delay-after-delete: 0s
+      scale-down-delay-after-failure: 3m
+      scale-down-unneeded-time: 5m
+
+    awsRegion: eu-central-1
+    cloudProvider: aws
+    replicaCount: 2
+    fullnameOverride: cluster-autoscaler
+
+    image:
+      repository: k8s.gcr.io/autoscaling/cluster-autoscaler
+      tag: v1.22.3
+      pullPolicy: IfNotPresent
+
+    autoDiscovery:
+      clusterName: company-stage-main
+
+    rbac:
+      serviceAccount:
+        name: cluster-autoscaler
+        annotations:
+          eks.amazonaws.com/role-arn: arn:aws:iam::627992770327:role/cluster-autoscaler-company-stage-main-oidc

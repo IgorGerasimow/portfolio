@@ -1,0 +1,36 @@
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1598967848906",
+    "Statement": [
+        {
+            "Sid": "Stmt1598967844619",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::stage-foundation-static-segments",
+                "arn:aws:s3:::stage-foundation-static-segments/*"
+            ],
+            "Condition": {
+                "IpAddress": {
+                    "aws:SourceIp": [
+                        "3.121.23.59/32",
+                        "3.121.28.124/32",
+                        "3.121.38.70/32",
+                        "154.59.192.1/32",
+                        "154.59.192.12/32",
+                        "185.72.51.150/32",
+                        "185.72.51.50/32",
+                        "52.58.37.80/32",
+                        "154.59.192.254/32",
+                        "154.59.192.253/32"
+                    ]
+                }
+            }
+        }
+    ]
+}

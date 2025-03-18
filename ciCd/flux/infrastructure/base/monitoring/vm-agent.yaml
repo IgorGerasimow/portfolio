@@ -1,0 +1,49 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: vmagent
+spec:
+  image:
+    tag: v1.84.0
+  priorityClassName: system-cluster-critical
+  selectAllByDefault: true
+  serviceScrapeNamespaceSelector: {}
+  serviceScrapeSelector:
+    matchExpressions:
+      - key: app
+        operator: NotIn
+        values:
+          - cost-analyzer
+  podScrapeNamespaceSelector: {}
+  podScrapeSelector: {}
+  scrapeInterval: 30s
+  vmAgentExternalLabelName: vmagent_stage
+  replicaCount: 2
+  remoteWrite:
+    - url: http://vminsert-vmcluster-persistent:8480/insert/0/prometheus/api/v1/write
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vmagent
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  podMetadata:
+    labels:
+      owner: company-devops
+      stream: company
+      env: preprod
+      jira: companySTREAM-13089
+      app: vmagent

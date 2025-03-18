@@ -1,0 +1,18 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: swagger
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`app.theguarantors.us`) && PathPrefix(`/`)
+    kind: Rule
+    services:
+    - name: swagger-swaggerui
+      port: 8080
+      weight: 1
+      passHostHeader: true
+      responseForwarding:
+        flushInterval: 100ms

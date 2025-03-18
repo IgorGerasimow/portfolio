@@ -1,0 +1,12 @@
+- userarn: arn:aws:iam::Example:user/Example@Example.com
+  username: Example@Example
+  groups:
+  - system:masters
+- userarn: arn:aws:iam::Example:user/Example@Example.com
+  username: Example@Example
+  groups:
+  - system:masters
+- userarn: arn:aws:iam::Example:user/Example@Example.com
+  username: Example@Example
+  groups:
+  - system:masters

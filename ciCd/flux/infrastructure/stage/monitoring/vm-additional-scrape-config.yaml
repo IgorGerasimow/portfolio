@@ -1,0 +1,592 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: additional-scrape-config
+stringData:
+  additional-config.yaml: |
+    - job_name: "zookeeper_exporter"
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      metrics_path: /metrics
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 8079
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: zookeeper
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring_zk]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+        - source_labels: [__meta_ec2_tag_CP_Cluster]
+          target_label: cp_cluster
+        - source_labels: [__meta_ec2_tag_CP_Release]
+          target_label: cp_release
+    - job_name: "schema_registry_exporter"
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      metrics_path: /
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9308
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: schema_registry
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+        - source_labels: [__meta_ec2_tag_CP_Cluster]
+          target_label: cp_cluster
+        - source_labels: [__meta_ec2_tag_CP_Release]
+          target_label: cp_release
+    - job_name: "ksqldb_exporter"
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      metrics_path: /
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9308
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: ksqldb
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+        - source_labels: [__meta_ec2_tag_CP_Cluster]
+          target_label: cp_cluster
+        - source_labels: [__meta_ec2_tag_CP_Release]
+          target_label: cp_release
+    - job_name: "kafka_connect_exporter"
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      metrics_path: /
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9308
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: kafka-connect
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+        - source_labels: [__meta_ec2_tag_CP_Cluster]
+          target_label: cp_cluster
+        - source_labels: [__meta_ec2_tag_CP_Release]
+          target_label: cp_release
+    - job_name: "elasticsearch_sd"
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      metrics_path: /metrics
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9108
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: elasticsearch
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "redis_exporter"
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9121
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: redis
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: sql_exporter
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9237
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: postgresql
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: nodes
+      scrape_interval: 30s
+      scrape_timeout: 30s
+      metrics_path: /metrics
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9100
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_state]
+          regex: ^stopped$
+          action: drop
+        - source_labels: [__meta_ec2_tag_App]
+          regex: ^eks-node$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: kafka
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9308
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: kafka
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring_kafka]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: aws_name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+        - source_labels: [__meta_ec2_tag_CP_Cluster]
+          target_label: cp_cluster
+        - source_labels: [__meta_ec2_tag_CP_Release]
+          target_label: cp_release
+    - job_name: minio
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      scheme: https
+      tls_config:
+        insecure_skip_verify: true
+      metrics_path: /minio/prometheus/metrics
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9091
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: minio
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: rabbitmq
+      scrape_interval: 60s
+      scrape_timeout: 60s
+      metrics_path: /api/metrics
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 15672
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: rabbitmq
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "nginx_exporter"
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9113
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: nginx
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "jvm_exporter"
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 8081
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: cassandra
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "mongodb_exporter"
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9216
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: mongodb
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "aerospike_exporter"
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9145
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: aerospike
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "haproxy_exporter"
+      scrape_interval: 30s
+      scrape_timeout: 30s
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9101
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_App]
+          regex: haproxy
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner
+    - job_name: "eventstore_exporter"
+      metrics_path: /metrics
+      scheme: http
+      ec2_sd_configs:
+        - region: "eu-central-1"
+          port: 9448
+      relabel_configs:
+        - source_labels: [__meta_ec2_tag_Cluster]
+          regex: company_eventstore
+          action: keep
+        - source_labels: [__meta_ec2_tag_prometheus_monitoring]
+          regex: ^false$
+          action: drop
+        - source_labels: [__meta_ec2_instance_name]
+          target_label: instance
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: name
+        - source_labels: [__meta_ec2_tag_Name]
+          target_label: host
+        - source_labels: [__meta_ec2_tag_Jira]
+          target_label: jira
+        - source_labels: [__meta_ec2_instance_state]
+          target_label: AWS_instance_state
+        - source_labels: [__meta_ec2_tag_Team]
+          target_label: team
+        - source_labels: [__meta_ec2_tag_App]
+          target_label: app
+        - source_labels: [__meta_ec2_tag_Product]
+          target_label: product
+        - source_labels: [__meta_ec2_tag_Stream]
+          target_label: stream
+        - source_labels: [__meta_ec2_tag_Owner]
+          target_label: owner

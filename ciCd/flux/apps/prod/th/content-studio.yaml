@@ -1,0 +1,28 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: content-studio
+spec:
+  values:
+    tag: v1.0.303-main
+    configmap:
+      API_company_BRAND_CONFIG_ENDPOINT: "https://company-brand-configuration.cloud.corp.loc"
+      API_company_BRAND_CONFIG_TIMEOUT: 5000
+      TEMPLATE_RENDERER_SERVICE_URL: th-template-renderer.company.corp.loc:443
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      TEMPLATE_RENDERER_SERVICE_URL_TLS: 1
+      DATABASE_HOST: content-studio-prod.cxn0ot1abdss.eu-central-1.rds.amazonaws.com
+      DATABASE_PORT: 3306
+      DATABASE_NAME: th_content_studio
+      company_SERVICE_API_URL: http://api.company-comp.com/
+      company_SERVICE_MASTER_TOKEN: 'TODO'
+      company_SERVICE_REQUEST_TIMEOUT: 5000
+    labels:
+      env: prod
+      replicaCount: 2
+    ingress:
+      hosts:
+        - host: th-content-studio.company.corp.loc
+          paths: /
+          port: 80

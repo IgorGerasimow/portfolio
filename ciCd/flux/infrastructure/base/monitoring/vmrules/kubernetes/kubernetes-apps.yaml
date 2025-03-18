@@ -1,0 +1,499 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  labels:
+    env: stage
+    owner: company-devops
+    stream: company
+  name: kubernetes-apps-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: kubernetes-apps
+    rules:
+    - alert: KubePodCrashLooping
+      annotations:
+        description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is in waiting state (reason: "CrashLoopBackOff").'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodcrashlooping
+        summary: Pod is crash looping.
+      expr: |
+        max_over_time(
+          kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff", job="kube-state-metrics", namespace=~"monitoring|infra|argo-rollouts"}[5m]
+        ) * on (namespace, pod) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, pod) (
+          1, max by(namespace, pod, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_pod_labels{job="kube-state-metrics"}
+          )
+        ) >= 1
+      for: 15m
+      labels:
+        severity: critical
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubePodNotReady
+      annotations:
+        description: Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
+        summary: Pod has been in a non-ready state for more than 15 minutes.
+      expr: |
+        sum by (namespace, pod) (
+          max by(namespace, pod) (
+            kube_pod_status_phase{job="kube-state-metrics", phase=~"Pending|Unknown", namespace=~"monitoring|infra|argo-rollouts"}
+          ) * on(namespace, pod) group_left(owner_kind) topk by(namespace, pod) (
+            1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!="Job"})
+          )
+        ) * on(namespace, pod) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, pod) (
+          1, max by(namespace, pod, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_pod_labels{job="kube-state-metrics"}
+          )
+        ) > 0
+      for: 15m
+      labels:
+        severity: critical
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeDeploymentGenerationMismatch
+      annotations:
+        description: Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment }} does not match, this indicates that the Deployment has failed but has not been rolled back.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedeploymentgenerationmismatch
+        summary: Deployment generation mismatch due to possible roll-back
+      expr: |
+        (
+          kube_deployment_status_observed_generation{job="kube-state-metrics"}
+            !=
+          kube_deployment_metadata_generation{job="kube-state-metrics"}
+        ) * on(namespace, deployment) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, deployment) (
+          1, max by(namespace, deployment, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_deployment_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: critical
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeDeploymentReplicasMismatch
+      annotations:
+        description: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of replicas for longer than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedeploymentreplicasmismatch
+        summary: Deployment has not matched the expected number of replicas.
+      expr: |
+        ((
+          kube_deployment_spec_replicas{job="kube-state-metrics"}
+            >
+          kube_deployment_status_replicas_available{job="kube-state-metrics"}
+        ) and (
+          changes(kube_deployment_status_replicas_updated{job="kube-state-metrics"}[10m])
+            ==
+          0
+        )) * on(namespace, deployment) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, deployment) (
+          1, max by(namespace, deployment, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_deployment_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeStatefulSetReplicasMismatch
+      annotations:
+        description: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has not matched the expected number of replicas for longer than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubestatefulsetreplicasmismatch
+        summary: Deployment has not matched the expected number of replicas.
+      expr: |
+        ((
+          kube_statefulset_status_replicas_ready{job="kube-state-metrics"}
+            !=
+          kube_statefulset_status_replicas{job="kube-state-metrics"}
+        ) and (
+          changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics"}[10m])
+            ==
+          0
+        )) * on(namespace, statefulset) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, statefulset) (
+          1, max by(namespace, statefulset, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_statefulset_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeStatefulSetGenerationMismatch
+      annotations:
+        description: StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }} does not match, this indicates that the StatefulSet has failed but has not been rolled back.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubestatefulsetgenerationmismatch
+        summary: StatefulSet generation mismatch due to possible roll-back
+      expr: |
+        (
+          kube_statefulset_status_observed_generation{job="kube-state-metrics"}
+            !=
+          kube_statefulset_metadata_generation{job="kube-state-metrics"}
+        ) * on(namespace, statefulset) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, statefulset) (
+          1, max by(namespace, statefulset, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_statefulset_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeStatefulSetUpdateNotRolledOut
+      annotations:
+        description: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} update has not been rolled out.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubestatefulsetupdatenotrolledout
+        summary: StatefulSet update has not been rolled out.
+      expr: |
+        ((
+          max without (revision) (
+            kube_statefulset_status_current_revision{job="kube-state-metrics"}
+              unless
+            kube_statefulset_status_update_revision{job="kube-state-metrics"}
+          )
+            *
+          (
+            kube_statefulset_replicas{job="kube-state-metrics"}
+              !=
+            kube_statefulset_status_replicas_updated{job="kube-state-metrics"}
+          )
+        )  and (
+          changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics"}[5m])
+            ==
+          0
+        )) * on(namespace, statefulset) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, statefulset) (
+          1, max by(namespace, statefulset, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_statefulset_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeDaemonSetRolloutStuck
+      annotations:
+        description: DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} has not finished or progressed for at least 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetrolloutstuck
+        summary: DaemonSet rollout is stuck.
+      expr: |
+        ((
+          (
+            kube_daemonset_status_current_number_scheduled{job="kube-state-metrics"}
+             !=
+            kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"}
+          ) or (
+            kube_daemonset_status_number_misscheduled{job="kube-state-metrics"}
+             !=
+            0
+          ) or (
+            kube_daemonset_updated_number_scheduled{job="kube-state-metrics"}
+             !=
+            kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"}
+          ) or (
+            kube_daemonset_status_number_available{job="kube-state-metrics"}
+             !=
+            kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"}
+          )
+        ) and (
+          changes(kube_daemonset_updated_number_scheduled{job="kube-state-metrics"}[5m])
+            ==
+          0
+        )) * on(namespace, daemonset) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, daemonset) (
+          1, max by(namespace, daemonset, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_daemonset_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeContainerWaiting
+      annotations:
+        description: Pod {{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container}} has been in waiting state for longer than 1 hour.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecontainerwaiting
+        summary: Pod container waiting longer than 1 hour
+      expr: |
+        sum by (namespace, pod, container) (kube_pod_container_status_waiting_reason{job="kube-state-metrics"})
+        * on(namespace, pod) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, pod) (
+          1, max by(namespace, pod, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_pod_labels{job="kube-state-metrics"}
+          )
+        ) > 0
+      for: 1h
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeDaemonSetNotScheduled
+      annotations:
+        description: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are not scheduled.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetnotscheduled
+        summary: DaemonSet pods are not scheduled.
+      expr: |
+        (
+          kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"}
+            -
+          kube_daemonset_status_current_number_scheduled{job="kube-state-metrics"}
+        ) * on(namespace, daemonset) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, daemonset) (
+          1, max by(namespace, daemonset, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_daemonset_labels{job="kube-state-metrics"}
+          )
+        ) > 0
+      for: 10m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeDaemonSetMisScheduled
+      annotations:
+        description: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are running where they are not supposed to run.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetmisscheduled
+        summary: DaemonSet pods are misscheduled.
+      expr: |
+        kube_daemonset_status_number_misscheduled{job="kube-state-metrics"}
+        * on(namespace, daemonset) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, daemonset) (
+          1, max by(namespace, daemonset, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_daemonset_labels{job="kube-state-metrics"}
+          )
+        ) > 0
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeJobCompletion
+      annotations:
+        description: Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more than 12 hours to complete.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubejobcompletion
+        summary: Job did not complete in time
+      expr: |
+        (
+          kube_job_spec_completions{job="kube-state-metrics"}
+            -
+          kube_job_status_succeeded{job="kube-state-metrics"}
+        ) * on(namespace, job_name) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, job_name) (
+          1, max by(namespace, job_name, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_job_labels{job="kube-state-metrics"}
+          )
+        ) > 0
+      for: 12h
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeJobFailed
+      annotations:
+        description: Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete. Removing failed job after investigation should clear this alert.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubejobfailed
+        summary: Job failed to complete.
+      expr: |
+        kube_job_failed{job="kube-state-metrics"}
+        * on(namespace, job_name) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, job_name) (
+          1, max by(namespace, job_name, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_job_labels{job="kube-state-metrics"}
+          )
+        ) > 0
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeHpaReplicasMismatch
+      annotations:
+        description: HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }} has not matched the desired number of replicas for longer than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubehpareplicasmismatch
+        summary: HPA has not matched descired number of replicas.
+      expr: |
+        ((
+        kube_horizontalpodautoscaler_status_desired_replicas{job="kube-state-metrics"}
+          !=
+        kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics"})
+          and
+        (kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics"}
+          >
+        kube_horizontalpodautoscaler_spec_min_replicas{job="kube-state-metrics"})
+          and
+        (kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics"}
+          <
+        kube_horizontalpodautoscaler_spec_max_replicas{job="kube-state-metrics"})
+          and
+        changes(kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics"}[15m]) == 0
+        ) * on(namespace, horizontalpodautoscaler) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, horizontalpodautoscaler) (
+          1, max by(namespace, horizontalpodautoscaler, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_horizontalpodautoscaler_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeHpaMaxedOut
+      annotations:
+        description: HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }} has been running at max replicas for longer than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubehpamaxedout
+        summary: HPA is running at max replicas
+      expr: |
+        (
+          kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics"}
+            ==
+          kube_horizontalpodautoscaler_spec_max_replicas{job="kube-state-metrics"}
+        ) * on(namespace, horizontalpodautoscaler) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, horizontalpodautoscaler) (
+          1, max by(namespace, horizontalpodautoscaler, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_horizontalpodautoscaler_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 15m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubePodOOMKilled
+      annotations:
+        description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is terminated by OOMKilled.'
+        summary: Pod is OOMKilled.
+      expr: |
+        (
+          sum by (namespace, pod, container) (
+            increase(
+              kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace=~"monitoring|infra|argo-rollouts"}[5m]
+            )
+          ) >= 1
+          and
+          sum by (namespace, pod, container) (
+            max_over_time(
+              kube_pod_container_status_last_terminated_reason{reason="OOMKilled", job="kube-state-metrics", namespace=~"monitoring|infra|argo-rollouts"}[5m]
+            )
+          ) >= 1
+        ) * on(namespace, pod) group_left(label_owner, label_app, label_stream, label_env, label_team)
+        topk by (namespace, pod) (
+          1, max by(namespace, pod, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_pod_labels{job="kube-state-metrics"}
+          )
+        )
+      for: 1m
+      labels:
+        severity: critical
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeContainerMemoryUsage
+      annotations:
+        description: 'Memory usage of pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is above 80%.\n  VALUE = {{ $value }}'
+        summary: Memory usage is too high.
+      expr: |
+        (
+          sum by (namespace, pod, container) (
+            container_memory_working_set_bytes{container!~"POD", image!=""}
+          )
+          /
+          sum by (namespace, pod, container) (
+            container_spec_memory_limit_bytes{container!~"POD", image!=""} > 0
+          )
+        ) * on(namespace, pod) group_left(label_owner, label_app, label_stream, label_env, label_team) topk by (namespace, pod) (
+          1, max by(namespace, pod, label_owner, label_app, label_stream, label_env, label_team) (
+            kube_pod_labels{job="kube-state-metrics", namespace!="kube-system", label_app!~"^direct-feed.*"}
+          )
+        ) * 100 > 80
+      for: 10m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"
+    - alert: KubeContainerCpuUsage
+      annotations:
+        description: 'CPU usage of pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is above 80%.\n  VALUE = {{ $value }}'
+        summary: CPU usage is too high.
+      expr: |
+        sum(rate(container_cpu_usage_seconds_total{container!="POD"}[5m])) by (namespace, pod, container)
+          /
+          sum(
+            container_spec_cpu_quota{container_name!="POD"}
+            /
+            container_spec_cpu_period{name!~".*prometheus.*", image!="", container!="POD"}
+          )
+          by (namespace, pod, container)
+          *
+          on(namespace, pod) group_left(label_owner, label_app, label_stream, label_env, label_team)
+          topk by (namespace, pod)
+            (
+              1, max by(namespace, pod, label_owner, label_app, label_stream, label_env, label_team)
+              (kube_pod_labels{job="kube-state-metrics", namespace!="kube-system"}
+            )
+          ) * 100 > 80
+      for: 10m
+      labels:
+        severity: warning
+        owner: "{{ $labels.label_owner }}"
+        app: "{{ $labels.label_app }}"
+        stream: "{{ $labels.label_stream }}"
+        env: "{{ $labels.label_env }}"
+        team: "{{ $labels.label_team }}"

@@ -1,0 +1,38 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: template-renderer
+spec:
+  values:
+    tag: v1.0.82-main
+    configmap:
+      VERSION: "$RELEASE"
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      API_company_BRAND_CONFIG_ENDPOINT: https://company-brand-configuration.kube.private/
+      API_company_BRAND_CONFIG_TIMEOUT: 5000
+      DATABASE_HOST: dm-stage.cr6eyrbuyl7d.eu-central-1.rds.amazonaws.com
+      DATABASE_PORT: 3306
+      DATABASE_NAME: th_template_renderer
+      REDIS_URL: redis://redis-company-mail.l20tvz.ng.0001.euc1.cache.amazonaws.com:6379
+    labels:
+      env: stage
+      replicaCount: 1
+    ingress:
+      annotations:
+        alb.ingress.kubernetes.io/backend-protocol: HTTP
+        alb.ingress.kubernetes.io/backend-protocol-version: GRPC
+        alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+        alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
+        alb.ingress.kubernetes.io/scheme: internal
+        alb.ingress.kubernetes.io/target-type: ip
+        kubernetes.io/ingress.class: alb
+      hosts:
+        - host: th-template-renderer.company-stage.corp.loc
+          paths: /templaterenderer.TemplateRendererService/*
+          port: 5000
+      tls:
+        - hosts:
+            - th-template-renderer.company-stage.corp.loc
+          secretName: th-template-renderer-tls

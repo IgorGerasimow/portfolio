@@ -1,0 +1,8 @@
+#!/bin/sh
+PROJECT_PATH="/flux/aws-flux-company/aws-flux-company"
+
+docker build -t "git.corp.com:4567/${PROJECT_PATH}/deploy:latest" \
+-f .docker/Dockerfile \
+./.docker
+
+docker push "git.corp.com:4567/${PROJECT_PATH}/deploy:latest"

@@ -1,0 +1,63 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: vector
+  namespace: infra-core
+spec:
+  values:
+    image:
+      pullSecrets:
+      - name: deploy-secret
+    env:
+    - name: VECTOR_SELF_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: "spec.nodeName"
+    - name: KAFKA_BROKERS
+      valueFrom:
+        secretKeyRef:
+          key: bootstrap_external
+          name: strimzi-vault-secrets
+    - name: KAFKA_LOGIN
+      valueFrom:
+        secretKeyRef:
+          name: strimzi-vault-secrets
+          key: username
+    - name: KAFKA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: strimzi-vault-secrets
+          key: password
+    customConfig:
+      sinks:
+        kafka_out:
+          tls:
+            ca_file: /secrets/ca.cert
+    podAnnotations:
+      vault.hashicorp.com/agent-init-first: "true"
+      vault.hashicorp.com/agent-inject: "true"
+      vault.hashicorp.com/agent-inject-secret-ca.cert: kafka-root-ca/cert/ca
+      vault.hashicorp.com/agent-inject-secret-cert: kafka-intermediate-ca/issue/kafka-client
+      vault.hashicorp.com/agent-inject-secret-key: kafka-intermediate-ca/issue/kafka-client
+      vault.hashicorp.com/agent-inject-template-ca.cert: |
+        {{- with secret "kafka-intermediate-ca/cert/ca" -}}
+        {{ .Data.certificate }}
+        {{ end }}
+        {{- with secret "kafka-root-ca/cert/ca" -}}
+        {{ .Data.certificate }}
+        {{ end }}
+      vault.hashicorp.com/agent-inject-template-cert: |-
+        {{- with secret "kafka-intermediate-ca/issue/kafka-client" "common_name=vector-agent" -}}
+        {{ .Data.certificate }}
+        {{- end }}
+      vault.hashicorp.com/agent-inject-template-key: |-
+        {{- with secret "kafka-intermediate-ca/issue/kafka-client" "common_name=vector-agent" -}}
+        {{ .Data.private_key }}
+        {{- end }}
+      vault.hashicorp.com/agent-pre-populate-only: "true"
+      vault.hashicorp.com/role: kafka-tls
+      vault.hashicorp.com/secret-volume-path-ca.cert: /secrets
+      vault.hashicorp.com/secret-volume-path-cert: /secrets
+      vault.hashicorp.com/secret-volume-path-key: /secrets
+      vault.hashicorp.com/tls-skip-verify: "true"

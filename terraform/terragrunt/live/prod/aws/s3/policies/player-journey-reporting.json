@@ -1,0 +1,50 @@
+{
+  "Version": "2012-10-17",
+  "Id": "Policy1598967848906",
+  "Statement": [
+    {
+      "Sid": "Stmt1598967844619",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": [
+          "s3:GetObject",
+          "s3:ListBucket"
+      ],
+      "Resource": [
+          "arn:aws:s3:::prod-player-journey-reporting",
+          "arn:aws:s3:::prod-player-journey-reporting/*"
+      ],
+      "Condition": {
+        "IpAddress": {
+          "aws:SourceIp": [
+            "154.59.192.253/32",
+            "154.59.192.254/32",
+            "154.59.192.1/21",
+            "3.121.23.59/32",
+            "3.121.28.124/32",
+            "3.121.38.70/32"
+          ]
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+          "AWS": "arn:aws:iam::195710261801:role/player-journey-reporting-aws-prod-shared-eks-oidc"
+      },
+      "Action": [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:DeleteObject",
+          "s3:PutObjectAcl",
+          "s3:GetObjectAcl",
+          "s3:GetObjectVersion"
+      ],
+      "Resource": [
+          "arn:aws:s3:::prod-player-journey-reporting",
+          "arn:aws:s3:::prod-player-journey-reporting/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shell-operator
+  namespace: operators
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shell-operator
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: shell-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: shell-operator
+subjects:
+  - kind: ServiceAccount
+    name: shell-operator
+    namespace: operators
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shell-operator
+  namespace: operators
+  labels:
+    app: shell-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shell-operator
+  template:
+    metadata:
+      labels:
+        app: shell-operator
+    spec:
+      containers:
+      - name: shell-operator
+        image: git.corp.com:4567/kubernetes/shell-operator:v0.0.7-prod
+      serviceAccountName: shell-operator
+      imagePullSecrets:
+      - name: deploy-secret
+

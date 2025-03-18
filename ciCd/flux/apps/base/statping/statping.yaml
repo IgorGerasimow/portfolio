@@ -1,0 +1,120 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: statping
+spec:
+  interval: 1m
+  chart:
+    spec:
+      chart: statping
+      version: 0.1.14
+      sourceRef:
+        kind: HelmRepository
+        name: statping
+        namespace: flux-system
+      interval: 12h
+  values:
+    image:
+      repository: statping/statping
+      # image.tag -- https://github.com/statping/statping/releases
+      tag: v0.90.74
+      pullPolicy: IfNotPresent
+
+    replicaCount: 1
+
+    database:
+      connection: sqlite
+      host: localhost
+      port: 5432
+      username: company_admin
+      password: YmEyMzBmYjNlMGM1
+      database: statping_db
+      sslMode: "ssl_mode=disable"
+      readOnly: false
+
+    disableColors: true
+    debugMode: 1
+
+    nameOverride: ""
+    fullnameOverride: ""
+
+    serviceAccount:
+      create: true
+      name: ""
+
+    podSecurityContext: {}
+
+    securityContext: {}
+
+    service:
+      type: ClusterIP
+      port: 8080
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+
+    persistence:
+      enabled: false
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      storageClassName: "do-block-storage"
+
+    ingress:
+      # ingress.enabled -- Enable ingress
+      enabled: true
+      pathType: Prefix
+      tls: false
+      annotations:
+        kubernetes.io/ingress.class: nginx
+      hostname: statping.company-stage.corp.loc
+      # secretName: statping-cert
+      path: /
+      secrets: []
+
+    resources:
+      limits:
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+    extraVolumes: []
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+    livenessProbe:
+      httpGet:
+        path: /health
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+      successThreshold: 1
+
+    startupProbe:
+      httpGet:
+        path: /health
+      failureThreshold: 3
+      periodSeconds: 10
+
+    application:
+      logs:
+        ignore:
+          # application.logs.ignore.ping -- Don't log ping request on route `/ping`
+          ping: false
+      enable:
+        # application.enable.host -- Enable host in response
+        host: true
+        # application.enable.http -- Enable http in response
+        http: true
+        # application.enable.request -- Enable request in response
+        request: true
+        # application.enable.environment -- Enable environment in response
+        environment: true
+        # application.enable.file -- Enable file in response
+        file: true
+        # application.enable.header -- Enable custom header in response
+        header: true

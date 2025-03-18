@@ -1,0 +1,2651 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rotator-ingress
+  namespace: project
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app1.rotatorhub.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    ### DOMAIN PARKING
+    - host: parking-corppartners.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: startprtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: sigerous.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linktoteam.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    ### CF CUSTOM HOSTNAMES
+    - host: netpupnnano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopupnet.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdstolink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotopup2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20pinonline.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: ssspnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkpnpref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpwebgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: reflinknano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitpupgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: ssscorp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: propuppgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpuweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pupp20.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: putotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpin777.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: topuppsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopinref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pucorptds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: topintds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpugolink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpnpsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdspuppgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpupclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopunano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pingosss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pu-prtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepinonline.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopupnclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: punanobit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugobit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpupplink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepupp2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkpuppsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pinclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdsgotopin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 777pinweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: ssspuplink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopupref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepubit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpwebsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkpulink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpwebtds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdspnpweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: goreflinktds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pupgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: link41pro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20pnpto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpwebpro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: sssrefpu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tds72pro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: propinweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotopinlink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pupnnano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pptraf.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pupro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pulinkto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdspuplink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: btpuprtns.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpulinkto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpugotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: ssspu2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pubit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpsssref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepnplnk.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpinto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugotoref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpupnclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs20pu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkpinclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pinprobit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpin2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitpuref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopuppnano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitpnp777.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepugo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20prtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugo23ref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpinclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs-20.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrspu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: topnpgo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpupsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: propuweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopnpon.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corpto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corpgo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdsgopu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tds41clk.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: link-topromo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnprefwebnet.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: start-pu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refcorplinkto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20pinlink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corpsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: goreflinkpnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20pupnpro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: puwebpin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pinwebpro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitpupnweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs-promo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: online41net.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pingotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20pupngoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs-pup.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: putraf.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: goreflinksss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitlinktds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopupnref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotopin2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: togopnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corpgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnprefweblink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: ssspnpref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pup-prtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netputds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corpbit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: purefnanobit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdscorpgo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pupprtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpupnano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: goreflinkpu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs20pup.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: golinkcorp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: ssspuppweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpproweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pingolink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: purefpnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linktopu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugopro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrspup.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pintosss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pin-up-project.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pinprotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20-prtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: golinkpu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs2020pu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pu-connect.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 20pu20.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pintotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnprefwebtds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 777pupnweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopupref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pupredime.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020puppro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepusss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gogocorptds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpwebnet.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pnpnet.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkpupngo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs-pu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotorefpin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpugoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: go-streampu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: reffpnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugonano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpupweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdspnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corplinkto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pu20prtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs2020pup.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpinonline.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugolink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnprefwebgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: puprt.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 777pupweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 777pugo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refcorp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pu20-prtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pugoref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: puprtnrs-link.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnprefwebsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pupsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gositeredi.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: on2023pin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnppuref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linktotds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpnpsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpupnref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopnpsss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pingoref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: topuppclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: puprtnrs23.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepingo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webtdspin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepuweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gorefpnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopnpbit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: sitetdsurl.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corpref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdsppin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkpingoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitnanopu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopnpgoto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pnpbit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotopinnano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020puppnano.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepuonline.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpuppgo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gopintds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: click72go2.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: csnpin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpnpclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: totdspu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpuppweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: redcorplink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: topu2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpupbit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpuref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpnplnk.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020puppweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refpupp2020.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpnp20.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: 2020pnpon.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpinref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: onlinepnpbit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: toptdspup.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: redipulink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pucsn23p.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs20.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: bitpuppclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpinweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotopupnref.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corptsdnew.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnrs-20pu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpcss.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: golinkpnp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: refnanopin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: puprtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: corplink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: netpinclk.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: go-pupromo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdspintds.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pinsssto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: golinkpin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gotopup20.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tsdpupgo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: topupp777.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopupweb.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: nanopupnpro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpupnonline.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pintdslink.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: tdsgotest.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: linkssspu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: testgopu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pinsssto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gogoprtnrs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: webpinplay.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: clickpinplay.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: pnpgoplay.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: gogamepin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: prtnr-pinclick.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080
+    - host: partnrgotto.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app1-sv
+                port:
+                  number: 8080

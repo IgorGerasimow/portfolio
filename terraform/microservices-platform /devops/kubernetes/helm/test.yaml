@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statusbay-example
+  labels:
+    app.kubernetes.io/name: statusbay-example
+  annotations:
+    statusbay.io/application-name: "statusbay-application"
+    statusbay.io/progress-deadline-seconds: "60"
+    statusbay.io/report-slack-channels: "#foo-channel"
+    statusbay.io/report-deploy-by: similarweb@similarweb.com
+    statusbay.io/alerts-pingdom: nginx,us-east-1
+    statusbay.io/metrics-datadog-2xx: sum:web.http.2xx{*}
+    statusbay.io/metrics-datadog-5xx: sum:web.http.5xx{*}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: statusbay-example
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: statusbay-example
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent

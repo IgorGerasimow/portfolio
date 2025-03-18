@@ -1,0 +1,6 @@
+[Studio owned code]
+*                               @codeowners/studio/devops
+
+[Access Managers owned code]
+/live/prod/aws/security/iam/    @codeowners/security/security-operation
+/live/stage/aws/security/iam/   @codeowners/security/security-operation

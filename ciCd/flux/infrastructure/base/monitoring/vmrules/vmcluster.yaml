@@ -1,0 +1,279 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  labels:
+    owner: company-devops
+    stream: company
+    env: stage
+    app: vmalert
+  name: vmcluster-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: vmcluster-health
+      rules:
+        - alert: Vmcluster Too Many Restarts
+          expr: changes(process_start_time_seconds{job=~"vmselect.*|vminsert.*|vmstorage.*|vmagent.*|vmalert.*"}[15m]) > 2
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "{{ $labels.job }} too many restarts (instance {{ $labels.instance }})"
+            description: "Job {{ $labels.job }} (instance {{ $labels.instance }}) has restarted more than twice in the last 15 minutes. It might be crashlooping."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Service Down
+          expr: up{job=~"vmselect.*|vminsert.*|vmstorage.*|vmagent.*|vmalert.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Service {{ $labels.job }} is down on {{ $labels.instance }}"
+            description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Service is Down for 30m
+          expr: up{job=~"vmselect.*|vminsert.*|vmstorage.*|vmagent.*|vmalert.*"} == 0
+          for: 30m
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Service {{ $labels.job }} is down on {{ $labels.instance }}"
+            description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: VMCluster 50% of Services is down
+          expr: (sum(up{job=~"vmselect.*|vminsert.*|vmstorage.*|vmagent.*|vmalert.*"}) by (service) offset 10m - sum(up{job=~"vmselect.*|vminsert.*|vmstorage.*|vmagent.*|vmalert.*"}) by (service) ) > ((sum(up{job=~"vmselect.*|vminsert.*|vmstorage.*|vmagent.*|vmalert.*"}) by (service)) offset 10m  * 0.5)
+          for: 1m
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Service {{ $labels.job }} is down on {{ $labels.instance }}"
+            description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Process Near FD Limits
+          expr: process_open_fds{job=~"vm.*"} / (process_max_fds{job=~"vm.*"} / 100) > 90
+          for: 5m
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: 'Number of free file descriptors is less than 100 for "{{ $labels.job }}"("{{ $labels.instance }}") for the last 5m'
+            description: "Exhausting OS file descriptors limit can cause severe degradation of the process. Consider to increase the limit as fast as possible."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Too High Memory Usage
+          expr: (process_resident_memory_anon_bytes / vm_available_memory_bytes) > 0.8
+          for: 15m
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: 'It is more than 90% of memory used by "{{ $labels.job }}"("{{ $labels.instance }}") during the last 5m'
+            description: "Too high memory usage may result into multiple issues such as OOMs or degraded performance. Consider to either increase available memory or decrease the load on the process."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+    - name: vmcluster
+      rules:
+        - alert: Vmcluster Disk Runs Out Of Space In 3 Days
+          expr: |
+            vm_free_disk_space_bytes / ignoring(path)
+            (
+                (
+                rate(vm_rows_added_to_storage_total[3h]) -
+                ignoring(type) rate(vm_deduplicated_samples_total{type="merge"}[3h])
+                )
+              * scalar(
+                sum(vm_data_size_bytes{type!="indexdb"}) /
+                sum(vm_rows{type!="indexdb"})
+                )
+            ) < 3 * 24 * 3600
+          for: 30m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Instance {{ $labels.instance }} will run out of disk space in 3 days"
+            description: "Taking into account current ingestion rate, free disk space will be enough only for {{ $value | humanizeDuration }} on instance {{ $labels.instance }}.\n Consider to limit the ingestion rate, decrease retention or scale the disk space up if possible."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Disk Runs Out Of Space
+          expr: |
+            sum(vm_data_size_bytes) by(instance) /
+            (
+              sum(vm_free_disk_space_bytes) by(instance) +
+              sum(vm_data_size_bytes) by(instance)
+            ) > 0.8
+          for: 30m
+          labels:
+            severity: critical
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Instance {{ $labels.instance }} will run out of disk space soon"
+            description: "Disk utilisation on instance {{ $labels.instance }} is more than 80%.\n Having less than 20% of free disk space could cripple merges processes and overall performance. Consider to limit the ingestion rate, decrease retention or scale the disk space if possible."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Request Errors To Query API
+          expr: sum(rate(vm_http_request_errors_total{path=~".*quer.*"}[5m])) / sum(rate(vm_http_requests_all_total)[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Too many errors served by quries for {{ $labels.job }} path {{ $labels.path }} (instance {{ $labels.instance }}) It can indicate both bad dashbord or some problem in cluster."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Request Errors To API
+          expr: increase(vm_http_request_errors_total{path!~".*quer.*"}[5m]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Too many errors served for {{ $labels.job }} path {{ $labels.path }} (instance {{ $labels.instance }}) Please verify if clients are sending correct requests."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster RPC Errors
+          expr: |
+            (
+              sum(increase(vm_rpc_connection_errors_total[5m])) by(job, instance)
+              +
+              sum(increase(vm_rpc_dial_errors_total[5m])) by(job, instance)
+              +
+              sum(increase(vm_rpc_handshake_errors_total[5m])) by(job, instance)
+            ) > 0
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Too many RPC errors for {{ $labels.job }} (instance {{ $labels.instance }})"
+            description: "RPC errors are interconnection errors between cluster components.\n Possible reasons for errors are misconfiguration, overload, network blips or unreachable components."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Concurrent Flushes Hit The Limit
+          expr: avg_over_time(vm_concurrent_addrows_current[1m]) >= vm_concurrent_addrows_capacity
+          for: 5m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "vmstorage on instance {{ $labels.instance }} is constantly hitting concurrent flushes limit"
+            description: "The limit of concurrent flushes on instance {{ $labels.instance }} is equal to number of CPUs.\n When vmstorage constantly hits the limit it means that storage is overloaded and requires more CPU."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        # Too-many logs is useles till we implement non-scrape lable, should be uncommented after https://jira.comp.tech/browse/SRE-30018
+        # - alert: Vmcluster Too Many Logs
+        #   expr: sum(increase(vm_log_messages_total{level!="info"}[5m])) by (job, instance) > 0
+        #   for: 15m
+        #   labels:
+        #     severity: warning
+        #     owner: company-devops
+        #     stream: company
+        #   annotations:
+        #     summary: 'Too many logs printed for job "{{ $labels.job }}" ({{ $labels.instance }})'
+        #     description: "Logging rate for job \"{{ $labels.job }}\" ({{ $labels.instance }}) is {{ $value }} for last 15m.\n Worth to check logs for specific error messages."
+        #     runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Rows Rejected On Ingestion
+          expr: sum(rate(vm_rows_ignored_total[5m])) by (instance, reason) > 0
+          for: 15m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: 'Some rows are rejected on "{{ $labels.instance }}" on ingestion attempt'
+            description: 'VM is rejecting to ingest rows on "{{ $labels.instance }}" due to the following reason: "{{ $labels.reason }}"'
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Too High Churn Rate
+          expr: |
+            (
+                sum(rate(vm_new_timeseries_created_total[5m]))
+                /
+                sum(rate(vm_rows_inserted_total[5m]))
+              ) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Churn rate is more than 10% for the last 15m"
+            description: "VM constantly creates new time series.\n This effect is known as Churn Rate.\n High Churn Rate tightly connected with database performance and may result in unexpected OOM's or slow queries."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Too High Churn Rate 24h
+          expr: |
+            sum(increase(vm_new_timeseries_created_total[24h]))
+            >
+            (sum(vm_cache_entries{type="storage/hour_metric_ids"})* 3)
+          for: 15m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Too high number of new series created over last 24h"
+            description: "The number of created new time series over last 24h is 3x times higher than current number of active series.\n This effect is known as Churn Rate.\n High Churn Rate tightly connected with database performance and may result in unexpected OOM's or slow queries."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Too High Slow Inserts Rate
+          expr: |
+            (
+                sum(rate(vm_slow_row_inserts_total[5m]))
+                /
+                sum(rate(vm_rows_inserted_total[5m]))
+              ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Percentage of slow inserts is more than 5% for the last 15m"
+            description: "High rate of slow inserts may be a sign of resource exhaustion for the current load. It is likely more RAM is needed for optimal handling of the current number of active time series."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        # We do not limit or filtrate incoming tags, so this alerts is useles for now. Should be uncommented after https://jira.comp.tech/browse/SRE-30019
+        # - alert: Vmcluster Labels Limit Exceeded On Ingestion
+        #   expr: sum(increase(vm_metrics_with_dropped_labels_total[5m])) by (instance) > 0
+        #   for: 15m
+        #   labels:
+        #     severity: warning
+        #     owner: company-devops
+        #     stream: company
+        #   annotations:
+        #     summary: "Metrics ingested to vminsert on {{ $labels.instance }} are exceeding labels limit"
+        #     description: "VictoriaMetrics limits the number of labels per each metric with `-maxLabelsPerTimeseries` command-line flag.\n This prevents from ingesting metrics with too many labels. Please verify that `-maxLabelsPerTimeseries` is configured correctly or that clients which send these metrics aren't misbehaving."
+        #     runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#
+
+        - alert: Vmcluster Vminsert Vmstorage Connection Is Saturated
+          expr: rate(vm_rpc_send_duration_seconds_total[5m]) > 0.9
+          for: 15m
+          labels:
+            severity: warning
+            owner: company-devops
+            stream: company
+          annotations:
+            summary: "Connection between vminsert on {{ $labels.instance }} and vmstorage on {{ $labels.addr }} is saturated"
+            description: "The connection between vminsert (instance {{ $labels.instance }}) and vmstorage (instance {{ $labels.addr }}) is saturated by more than 90% and vminsert won't be able to keep up.\n This usually means that more vminsert or vmstorage nodes must be added to the cluster in order to increase the total number of vminsert -> vmstorage links."
+            runbookURL: https://git.corp.com/DevOps/runbook/-/blob/master/prometheus-alerts/victoriametrics.md#

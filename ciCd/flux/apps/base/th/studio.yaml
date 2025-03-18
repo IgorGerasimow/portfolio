@@ -1,0 +1,70 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: studio
+spec:
+  interval: 1m
+  chart:
+    spec:
+      chart: deployer
+      version: 2.22.6
+      sourceRef:
+        kind: HelmRepository
+        name: internal
+        namespace: flux-system
+      interval: 24h
+  values:
+    monitoring:
+      - portname: http
+        path: /health
+    configmap:
+      VERSION: "$RELEASE_TAG"
+      APP_NAME: "studio"
+      NODE_ENV: production
+    secretEnvRef:
+      - db-auth-studio
+    labels:
+      app: studio
+      team: company
+      product: company
+      owner: company
+      stream: company
+    deployment:
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+      replicaCount: 1
+      annotations: {}
+      pullSecret: deploy-secret
+      images:
+        - image: git.corp.com:4567/cm/company/th/studio/studio
+          pullPolicy: IfNotPresent
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 80
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 80
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "200m"
+            limits:
+              memory: "1500Mi"
+    service:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: 80
+          protocol: TCP

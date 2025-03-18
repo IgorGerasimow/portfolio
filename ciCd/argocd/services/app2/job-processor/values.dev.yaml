@@ -1,0 +1,21 @@
+app:
+  environment: dev
+
+  replicas: 1
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+
+  hpa:
+    enabled: false
+
+  image:
+    repository: "AWS ID.dkr.ecr.eu-central-1.amazonaws.com/project/service1-api"
+    tag: "fa1074ab"
+
+
+
