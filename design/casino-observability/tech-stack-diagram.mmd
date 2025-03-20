@@ -1,0 +1,40 @@
+flowchart TB
+    subgraph "Client Layer"
+        ReactSPA["React SPA\n(Deployed to S3 with CloudFront)"]
+    end
+
+    subgraph "AWS Cloud Infrastructure"
+        ALB["Application Load Balancer (ALB)"]
+        
+        subgraph "ECS Cluster"
+            subgraph "Microservices"
+                Vault["Vault\n(Payments Gateway)"]
+                Concierge["Concierge\n(Rewards Microservice)"]
+                RoomService["Room-Service\n(Socket.io Updates)"]
+            end
+        end
+        
+        MSK["Amazon MSK\n(Managed Kafka Cluster)"]
+        
+        subgraph "Data Stores"
+            VaultDB["Vault Database\n- User Balances\n- Transaction History\n- Credits/Debits\n- Exchange Rates"]
+            ConciergeDB["Concierge Database\n- Player Volume\n- VIP Points\n- Leaderboard Points\n- Tier/Level Data"]
+        end
+    end
+    
+    %% External connections
+    ReactSPA --> ALB
+    ALB --> Vault
+    ALB --> Concierge
+    ALB --> RoomService
+    
+    %% Internal connections
+    Vault --> VaultDB
+    Concierge --> ConciergeDB
+    Concierge --> MSK
+    MSK --> RoomService
+    RoomService --> ReactSPA
+    
+    %% Communication flows
+    Vault -.-> RoomService
+    Concierge -.-> RoomService
