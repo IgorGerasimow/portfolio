@@ -766,3 +766,62 @@ Room-Service (Socket.io)
 - High socket disconnection rate
 - Message delivery failure spike
 - Abnormal connection patterns (potential DoS)
+
+ECS
+- Container CPU/memory utilization
+- Container restart frequency
+- ECS service health and task counts
+- Container startup/shutdown times
+- Cluster node amount ( depends of Fargate of on-prem )
+
+ALB
+- Request count, latency, error rates
+- Connection count and time
+- Rejected connection rate
+- 4xx/5xx error rates per service
+
+MSK (Kafka)
+- Broker health and disk usage
+- Topic lag metrics
+- Partition count and replication status
+- Network throughput
+
+Some mission-critical areas include ensuring:
+
+- Bets are being processed correctly
+- Rewards are being calculated properly
+- Users are not abusing the system (attempting to bet more than is allowed by the client, forcing rollbacks, etc.)
+
+<details>
+<summary>Click to expand Validate bet amount against user balance before processing</summary>
+
+```javascript
+  const userBalance = getUserBalance(userId);
+  if (userBalance < betAmount) {
+    logger.warn('Bet rejected: Insufficient funds', {
+      correlationId,
+      userId,
+      betAmount,
+      actualBalance: userBalance,
+      action: 'bet.rejected'
+    });
+    return { success: false, reason: 'INSUFFICIENT_FUNDS' };
+  }
+
+  try {
+    // Record start time for processing duration
+    const startTime = process.hrtime();
+    
+    // Process the bet
+    const result = processBetGameLogic(userId, betAmount, betType, gameId);
+    
+    // Calculate processing time
+    const hrtime = process.hrtime(startTime);
+    const processingTimeMs = hrtime[0] * 1000 + hrtime[1] / 1000000;
+```
+</details>
+
+
+- Users are able to deposit and withdraw supported currencies
+- Uptime monitoring for various services, e.g. "Customer chat is down"
+- Feel free to add anything else you think would be helpful to monitor as a casino admin
