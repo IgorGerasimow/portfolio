@@ -48,9 +48,7 @@ readinessProbe:
     port: 3000
   initialDelaySeconds: 30
   periodSeconds: 30
-
-
-```
+  
 const express = require('express');
 const { Kafka } = require('kafkajs');
 const mongoose = require('mongoose'); // Example for MongoDB
@@ -162,5 +160,3 @@ process.on('SIGTERM', () => {
   producer.disconnect();
   process.exit(0);
 });
-
-```
