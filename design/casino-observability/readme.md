@@ -33,6 +33,7 @@ Each of 3 services have external dependencies: database, Kafka queue, socket.io 
 - [4. DD integration](#4-DD-integration)
 
 
+
 ![Schema drawing](pics/casino-monitoring-architecture.svg)
 
 ---
@@ -869,5 +870,5 @@ Some mission-critical areas include ensuring:
   </details>
 
 - Users are able to deposit and withdraw supported currencies
-- Uptime monitoring for various services, e.g. "Customer chat is down"- Feel free to add anything else you think would be helpful to monitor as a casino admin
+- Uptime monitoring for various services, e.g. "Customer chat is down"
 - Users are not abusing the system (attempting to bet more than is allowed by the client, forcing rollbacks, etc.)
