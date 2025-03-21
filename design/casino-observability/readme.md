@@ -31,11 +31,14 @@ Solution would have at least 3 layers
 Each of 3 services have external dependencies: database, Kafka queue, socket.io
 Containerised ( ECS, EKS ) must have proper healthchecks 
 
+healthchecks: 
+
 <details>
-  <summary>Show/Hide code</summary>
+  <summary>Show healthchecks/Hide healthchecks</summary>
 
   ```python
   # Code example
+
   livenessProbe:
   httpGet:
     path: /liveness
@@ -48,7 +51,7 @@ readinessProbe:
     port: 3000
   initialDelaySeconds: 30
   periodSeconds: 30
-  
+----------------------------------------  
 const express = require('express');
 const { Kafka } = require('kafkajs');
 const mongoose = require('mongoose'); // Example for MongoDB
@@ -160,3 +163,198 @@ process.on('SIGTERM', () => {
   producer.disconnect();
   process.exit(0);
 });
+
+
+Graceful shutdown: 
+ - Stops accepting new connections
+ - Properly closes database connections
+ - Properly disconnects from Kafka
+ - Handles multiple termination signals (SIGTERM, SIGINT)
+
+<details>
+  <summary>Show Graceful shutdown/Hide Graceful shutdown</summary>
+
+  ```python
+  # Code example
+
+
+
+const express = require('express');
+const { Kafka } = require('kafkajs');
+const mongoose = require('mongoose'); // Example for MongoDB
+// const { Client } = require('pg'); // Uncomment for PostgreSQL
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Database settings - replace with your own
+const DB_URI = process.env.DB_URI || 'mongodb://localhost:27017/myapp';
+
+// Kafka settings - replace with your own
+const KAFKA_BROKERS = (process.env.KAFKA_BROKERS || 'localhost:9092').split(',');
+const KAFKA_CLIENT_ID = process.env.KAFKA_CLIENT_ID || 'health-check-client';
+
+// Connect to database (MongoDB example)
+mongoose.connect(DB_URI);
+const db = mongoose.connection;
+
+// Initialize Kafka client
+const kafka = new Kafka({
+  clientId: KAFKA_CLIENT_ID,
+  brokers: KAFKA_BROKERS,
+});
+const producer = kafka.producer();
+
+// Check database health
+async function checkDatabaseHealth() {
+  try {
+    // For MongoDB
+    if (db.readyState === 1) {
+      return { status: 'ok', message: 'Database connection is healthy' };
+    } else {
+      return { status: 'error', message: 'Database connection is not established' };
+    }
+    
+    /* For PostgreSQL uncomment:
+    const client = new Client();
+    await client.connect();
+    await client.query('SELECT 1');
+    await client.end();
+    return { status: 'ok', message: 'Database connection is healthy' };
+    */
+  } catch (error) {
+    return { 
+      status: 'error', 
+      message: `Database connection failed: ${error.message}` 
+    };
+  }
+}
+
+// Check Kafka health
+async function checkKafkaHealth() {
+  try {
+    // Check connection by attempting to connect to the broker
+    await producer.connect();
+    await producer.disconnect();
+    return { status: 'ok', message: 'Kafka connection is healthy' };
+  } catch (error) {
+    return { 
+      status: 'error', 
+      message: `Kafka connection failed: ${error.message}` 
+    };
+  }
+}
+
+// Endpoint for healthcheck
+app.get('/health', async (req, res) => {
+  const results = {
+    service: 'ok',
+    timestamp: new Date().toISOString(),
+    checks: {}
+  };
+
+  // Check database
+  results.checks.database = await checkDatabaseHealth();
+
+  // Check Kafka
+  results.checks.kafka = await checkKafkaHealth();
+
+  // Determine overall status
+  const hasErrors = Object.values(results.checks).some(check => check.status === 'error');
+  
+  if (hasErrors) {
+    results.service = 'error';
+    res.status(500);
+  } else {
+    res.status(200);
+  }
+
+  res.json(results);
+});
+
+// Simpler liveness probe endpoint
+app.get('/liveness', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Start the server with a reference we can close later
+const server = app.listen(PORT, () => {
+  console.log(`Health check service listening on port ${PORT}`);
+});
+
+// Track in-flight requests
+let connections = 0;
+let shuttingDown = false;
+
+// Count connections
+server.on('connection', connection => {
+  connections++;
+  connection.on('close', () => {
+    connections--;
+  });
+});
+
+// Enhanced graceful shutdown implementation
+async function gracefulShutdown(signal) {
+  console.log(`${signal} signal received: starting graceful shutdown`);
+  
+  // Mark as shutting down - will be used for health checks
+  shuttingDown = true;
+  
+  // Stop accepting new connections
+  server.close(() => {
+    console.log('HTTP server closed, all requests have completed');
+  });
+  
+  // Add a timeout to ensure we don't hang indefinitely
+  let forcedShutdownTimeout = setTimeout(() => {
+    console.log('Forcing shutdown after timeout');
+    process.exit(1);
+  }, 30000); // 30 seconds timeout for graceful shutdown
+  
+  // Wait for connections to drain with periodic logging
+  let shutdownInterval = setInterval(() => {
+    console.log(`Waiting for ${connections} connections to close...`);
+    if (connections === 0) {
+      clearInterval(shutdownInterval);
+      clearTimeout(forcedShutdownTimeout);
+      performCleanup();
+    }
+  }, 1000);
+  
+  // Update health check during shutdown
+  app.get('/health', (req, res) => {
+    res.status(503).json({
+      service: 'shutting_down',
+      timestamp: new Date().toISOString(),
+      message: 'Service is shutting down gracefully'
+    });
+  });
+}
+
+// Cleanup resources
+async function performCleanup() {
+  console.log('Cleaning up resources...');
+  
+  try {
+    // Disconnect from database
+    console.log('Closing database connection...');
+    await mongoose.disconnect();
+    console.log('Database connection closed');
+    
+    // Disconnect from Kafka
+    console.log('Closing Kafka connection...');
+    await producer.disconnect();
+    console.log('Kafka connection closed');
+    
+    console.log('Cleanup completed, exiting process');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during cleanup:', error);
+    process.exit(1);
+  }
+}
+
+// Handle termination signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
