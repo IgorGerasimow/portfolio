@@ -33,6 +33,8 @@ Each of 3 services have external dependencies: database, Kafka queue, socket.io 
 - [4. DD integration](#4-DD-integration)
 
 
+![Schema drawing](pics/casino-monitoring-architecture.svg)
+
 ---
 
 ### 1. Healthchecks
@@ -790,38 +792,82 @@ Some mission-critical areas include ensuring:
 
 - Bets are being processed correctly
 - Rewards are being calculated properly
-- Users are not abusing the system (attempting to bet more than is allowed by the client, forcing rollbacks, etc.)
 
-<details>
-<summary>Click to expand Validate bet amount against user balance before processing</summary>
+  <details>
+    <summary>Click to expand Calculate points based on event type and amount</summary>
 
-```javascript
-  const userBalance = getUserBalance(userId);
-  if (userBalance < betAmount) {
-    logger.warn('Bet rejected: Insufficient funds', {
-      correlationId,
-      userId,
-      betAmount,
-      actualBalance: userBalance,
-      action: 'bet.rejected'
-    });
-    return { success: false, reason: 'INSUFFICIENT_FUNDS' };
-  }
+    ```javascript
 
-  try {
-    // Record start time for processing duration
-    const startTime = process.hrtime();
-    
-    // Process the bet
-    const result = processBetGameLogic(userId, betAmount, betType, gameId);
-    
-    // Calculate processing time
-    const hrtime = process.hrtime(startTime);
-    const processingTimeMs = hrtime[0] * 1000 + hrtime[1] / 1000000;
-```
-</details>
+    // Calculate points based on event type and amount
+      const expectedPoints = this.calculateExpectedPoints(event);
+      
+      // Process the actual reward
+      const result = await this.processReward(event);
+      
+      // Calculate processing time
+      const hrtime = process.hrtime(startTime);
+      const processingTimeMs = hrtime[0] * 1000 + hrtime[1] / 1000000;
+      
+      // Validate points calculation matches expected
+      if (Math.abs(result.pointsAwarded - expectedPoints) > 0.01) {
+        logger.warn('Rewards calculation discrepancy', {
+          correlationId,
+          userId: event.userId,
+          expectedPoints,
+          actualPoints: result.pointsAwarded,
+          difference: result.pointsAwarded - expectedPoints,
+          event: event,
+          action: 'reward.discrepancy'
+        });
+        
+        dogstatsd.increment('rewards.discrepancies', 1, [`user:${event.userId}`]);
+      }
+      
+      // Check if user leveled up
+      if (result.newLevel && result.newLevel > result.previousLevel) {
+        logger.info('User level up', {
+          correlationId,
+          userId: event.userId,
+          previousLevel: result.previousLevel,
+          newLevel: result.newLevel,
+          totalPoints: result.totalPoints,
+          action: 'reward.levelup'
+        });
+        
+        dogstatsd.increment('rewards.levelups', 1, [`user:${event.userId}`, `new_level:${result.newLevel}`]);
+      }
+    ```
+  </details>
 
+  <details>
+  <summary>Click to expand Validate bet amount against user balance before processing</summary>
+
+  ```javascript
+    const userBalance = getUserBalance(userId);
+    if (userBalance < betAmount) {
+      logger.warn('Bet rejected: Insufficient funds', {
+        correlationId,
+        userId,
+        betAmount,
+        actualBalance: userBalance,
+        action: 'bet.rejected'
+      });
+      return { success: false, reason: 'INSUFFICIENT_FUNDS' };
+    }
+
+    try {
+      // Record start time for processing duration
+      const startTime = process.hrtime();
+      
+      // Process the bet
+      const result = processBetGameLogic(userId, betAmount, betType, gameId);
+      
+      // Calculate processing time
+      const hrtime = process.hrtime(startTime);
+      const processingTimeMs = hrtime[0] * 1000 + hrtime[1] / 1000000;
+  ```
+  </details>
 
 - Users are able to deposit and withdraw supported currencies
-- Uptime monitoring for various services, e.g. "Customer chat is down"
-- Feel free to add anything else you think would be helpful to monitor as a casino admin
+- Uptime monitoring for various services, e.g. "Customer chat is down"- Feel free to add anything else you think would be helpful to monitor as a casino admin
+- Users are not abusing the system (attempting to bet more than is allowed by the client, forcing rollbacks, etc.)
