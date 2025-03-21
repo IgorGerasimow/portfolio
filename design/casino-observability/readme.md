@@ -36,7 +36,7 @@ healthchecks:
 <details>
   <summary>Show healthchecks/Hide healthchecks</summary>
 
-  ```python
+  ```nodejs
   # Code example
 
   livenessProbe:
@@ -163,7 +163,7 @@ process.on('SIGTERM', () => {
   producer.disconnect();
   process.exit(0);
 });
-
+```
 
 Graceful shutdown: 
  - Stops accepting new connections
@@ -174,7 +174,7 @@ Graceful shutdown:
 <details>
   <summary>Show Graceful shutdown/Hide Graceful shutdown</summary>
 
-  ```python
+  ```nodejs
   # Code example
 
 
@@ -358,3 +358,4 @@ async function performCleanup() {
 // Handle termination signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+```
