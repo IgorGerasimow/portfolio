@@ -95,9 +95,11 @@
 ### [NDA company in crypto domain]
 **Role:** Lead Infra DevOps
 - Leading migration process from nothing to Platform Engineering and event-driving architecture
-- Long-terrm ( 1,6 years process lenght) planning, devided to quarter's 
+- Long-terrm ( 1,6 years process lenght) planning, devided to quarter's
 - Application templating with cloud native and 12-Factor app principals
-- Pushing Platform approach 
+- Pushing Platform approach
+- Managed Solana and Ethereum blockchain nodes in Kubernetes
+- Implemented event listeners powering an online casino crypto exchange
 
 ### [Surprise.com](https://surprise.com/)
 **Role:** Lead Infra DevOps  
@@ -114,9 +116,10 @@
 ### [Celsius.network](https://celsius.network/)
 **Role:** Senior DevOps / Lead DevOps  
 - Oversaw both daily operations and strategic planning  
-- Conducted hiring interviews and expanded infrastructure aligned with company objectives  
-- Implemented GitOps practices using ArgoCD, Customize, and other tools  
+- Conducted hiring interviews and expanded infrastructure aligned with company objectives
+- Implemented GitOps practices using ArgoCD, Customize, and other tools
 - Enhanced security measures and maintained regular DevOps operations
+- Supported blockchain transaction services and node infrastructure for crypto banking
 
 ---
 
