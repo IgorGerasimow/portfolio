@@ -100,6 +100,7 @@
 - Pushing Platform approach
 - Managed Solana and Ethereum blockchain nodes in Kubernetes
 - Implemented event listeners powering an online casino crypto exchange
+- Utilized vLLM-based AI tools to manage Terraform states and outputs on Kubernetes
 
 ### [Surprise.com](https://surprise.com/)
 **Role:** Lead Infra DevOps  
