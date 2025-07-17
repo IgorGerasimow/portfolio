@@ -2,7 +2,7 @@
 
 **Sr DevOps / Lead DevOps Engineer**
 
-- **Email:** i.herasimow@gmail.com
+- **Email:** igor.gerasim0v@outlook.com
 - **Telegram:** l0000rd  
 
 [GitHub](https://github.com/IgorGerasimow) | [LinkedIn](https://www.linkedin.com/in/igor-gerasimov-a0bb6b26b/)
