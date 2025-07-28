@@ -87,9 +87,17 @@
   - Advising developer teams and leading hiring interviews  
   - Guiding teams through technology adoption and process improvements
 
-- **Automation & Configuration:**  
-  - Deploying cloud-native and 12-factor ready applications  
+- **Automation & Configuration:**
+  - Deploying cloud-native and 12-factor ready applications
   - Implementing and optimizing delivery processes and automation frameworks
+
+- **Team Management:**
+  - Built strong horizontal connections between DevOps and development teams through regular collaboration sessions.
+  - Created personalized growth plans for engineers to encourage professional development and knowledge sharing.
+  - Organized short-term sprint goals while maintaining alignment with long-term technical roadmaps.
+  - Led the hiring process from screening to onboarding, ensuring smooth integration of new team members.
+  - Maintained open communication channels and regular check-ins to keep teams aligned and motivated.
+  - Fostered a culture of continuous improvement and ownership across the organization.
 
 ---
 ### [NDA company in crypto domain]
