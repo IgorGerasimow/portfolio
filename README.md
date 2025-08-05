@@ -61,8 +61,16 @@
 - **Programming Languages:**  
   - Python and Golang
 
+- **Queues:**
+  - Kafka, Pulsar
+
+- **Databases and datastorages:**
+  - Postgres, Mysql, Mongodb, Aerospike 
+
 - **Languages:**  
   - Fluent English; Ukrainian and Russian (native)
+ 
+    
 
 **Key Focus Areas:**
 
