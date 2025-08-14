@@ -65,7 +65,10 @@
   - Kafka, Pulsar
 
 - **Databases and datastorages:**
-  - Postgres, Mysql, Mongodb, Aerospike 
+  - Postgres, Mysql, Mongodb, Aerospike
+
+- **Secrets and Secutiry:**
+  - Vault, ExternalSecretsOperator, 1password, sealed secrets and SOPS
 
 - **Languages:**  
   - Fluent English; Ukrainian and Russian (native)
