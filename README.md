@@ -42,21 +42,26 @@
 
 - **Container Orchestration:**  
   - Kubernetes (EKS, GKE, kops, kubespray) – 5 years  
-  - Experience scaling clusters up to ~250 nodes  
+  - Experience scaling clusters up to ~250 nodes as average clusters, with pike up to 3000+ nodes ( what i don't want to do anymore ) 
   - Familiar with KEDA, Karpenter, and AWS Scaler
 
 - **Infrastructure as Code:**  
-  - Terraform and Terragrunt – 6 years of daily usage  
+  - Terraform and Terragrunt – 6 years of day-to-day usage  
   - AWS CDK - 1 year
-  - Emphasis on best practices: small changes, pull requests, logical module separation, and comprehensive documentation  
+  - Emphasis on best practices: small changes, pull requests, logical module separation, and comprehensive documentation, ABAC and advanced security  
   - Developed both basic and complex modules (e.g., platforms integrating auth stacks with components like elastiCashe, Kubernetes apps, API gateways, and S3 storage)
 
 - **Continuous Delivery & Automation:**  
-  - Jenkins, GitLab-CI, ArgoCD, Flux – 6 years  
+  - Jenkins, GitLab-CI, ArgoCD, Flux – 6 years
+    build microservices pipelines with several steps - build/test/deploy used ad SDLC alongsite with pipelines included unit/smoke/integrational tests with  preview environments and blue-green testings with hundreds services per cluster     
   - Ansible, Helm for deployment automation
 
 - **Monitoring & Logging:**  
   - Datadog, Prometheus + exporters, Telegraf, ELK stack, Grafana, VM stack
+    Ideal solution would contain multiple layers of observability solution
+    - kubernetes and 12-factor layer includes healthChecks, lifecycle policy, selfHealing, stop and start procedure, metrics exposure and tracing
+    - infra layer - Datadog/Grafana CLoud/any other solution as observability for cloud provider and services, db load for example or ssl certificates expiration, network traffic etc
+    - business level by used activity emulating with self made tool, this tool responding on main question - is app visible and working for user
 
 - **Programming Languages:**  
   - Python and Golang
@@ -87,8 +92,10 @@
 ## Experience
 
 - **Project Architecture & Planning:**  
-  - Designing cloud environments and CI/CD pipelines  
-  - Enhancing development and deployment cycles
+  Full design plan including 3 big pikes which intersect with each other and develop into and became foundation of Platform Engineering:
+   -  unified infrastructure covering 13 internal subprojects ( startups ) with single infra setup, strict list of tools we can use and support. This pike includes kubernetes clusters design with QoS, scaling nodes and pods strategy, traffic management with Istio, network design with Cillium with L2 banancing
+   -  unified delivery with application templates, this template incudes build and test ci pipeline, libraries and modules used internally, drivers for Postgre/mongo, examples of metrics and tracing for each app, procedure delivery triggered by PR and git tags
+   - unified documentation covering whole processes how your code become a product through delivery, how add alermanager rules for tracking your app and whre  find  
 
 - **Infrastructure Management:**  
   - Setting up and maintaining cloud environments and bare metal servers  
