@@ -13,6 +13,12 @@
 
 10+ Yr Multi-Cloud IT Pro | AWS Expert, Google | DevSecOps, GitOps, Platform Engine | | Skilled in cloud, containers, microservices | RTB, DeFiI am a passionate Python geek and DevOps engineer with over ten years of experience in software engineering and DevOps practices. My background in high-load distributed systems, microservices, monitoring, configuration, deployment, testing, and continuous integration has equipped me with strong technical and leadership skills. I thrive both as an individual contributor and a collaborative team player, consistently bringing diligence, dedication, and problem-solving prowess to every project.
 
+
+Let ma pass trought detailed tech examples of work I did before and activly working now: 
+ - Platform design for modern aws based system, with advanced scaling, application design patterns, observability features and cloud native - https://github.com/IgorGerasimow/platform-design
+ - How I see existing setup for EKS cluster in AWS - https://github.com/IgorGerasimow/platform-design/blob/main/docs/eks-cilium-istio-karpenter-cdk-manual.md
+ - How I run bareMetal design kubernetes with support of flat network across cluster and multiple providers - https://github.com/IgorGerasimow/platform-design/blob/main/docs/eks-cilium-istio-karpenter-terragrunt-manual.md
+
 ---
 
 ## Desired Improvement Areas
